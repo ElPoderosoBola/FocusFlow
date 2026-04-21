@@ -19,6 +19,7 @@ public class DatabaseService
         await _database.CreateTableAsync<TaskItem>();
         await _database.CreateTableAsync<HabitItem>();
         await _database.CreateTableAsync<DailyItem>();
+        await _database.CreateTableAsync<UserProfile>();
 
         // Inserta datos de ejemplo solo si no hay tareas guardadas.
         await SeedDataAsync();
@@ -147,5 +148,34 @@ public class DatabaseService
     {
         await InitAsync();
         return await _database!.DeleteAsync(item);
+    }
+
+    // Perfil del usuario (nivel y experiencia).
+    public async Task<UserProfile> GetUserProfileAsync()
+    {
+        await InitAsync();
+
+        var profile = await _database!.Table<UserProfile>().FirstOrDefaultAsync();
+
+        if (profile is not null)
+        {
+            return profile;
+        }
+
+        var newProfile = new UserProfile
+        {
+            Id = 1,
+            Level = 1,
+            CurrentXP = 0
+        };
+
+        await _database.InsertAsync(newProfile);
+        return newProfile;
+    }
+
+    public async Task<int> SaveUserProfileAsync(UserProfile profile)
+    {
+        await InitAsync();
+        return await _database!.InsertOrReplaceAsync(profile);
     }
 }

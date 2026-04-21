@@ -10,6 +10,7 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly DatabaseService _databaseService;
     private bool _isInitialized;
+    private IDispatcherTimer _timer;
 
     // Lista observable para que la UI se actualice cuando cambien las tareas.
     [ObservableProperty]
@@ -23,17 +24,54 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<DailyItem> dailies = new();
 
-    // Puntos de experiencia actuales del usuario.
+    // Perfil actual del usuario (nivel y experiencia persistidos).
     [ObservableProperty]
-    private int currentXP = 0;
+    private UserProfile currentUserProfile = new() { Id = 1, Level = 1, CurrentXP = 0 };
 
-    // Nivel actual del usuario.
+    // Indica si el temporizador está en marcha.
     [ObservableProperty]
-    private int currentLevel = 1;
+    private bool isTimerRunning = false;
+
+    // Texto del temporizador en formato MM:ss.
+    [ObservableProperty]
+    private string timerDisplay = "25:00";
+
+    // Segundos restantes del temporizador.
+    [ObservableProperty]
+    private int timeRemainingSeconds = 1500;
 
     public MainViewModel(DatabaseService databaseService)
     {
         _databaseService = databaseService;
+
+        // Inicializa el temporizador de concentración.
+        _timer = Application.Current.Dispatcher.CreateTimer();
+        _timer.Interval = TimeSpan.FromSeconds(1);
+        _timer.Tick += Timer_Tick;
+    }
+
+    private async void Timer_Tick(object sender, EventArgs e)
+    {
+        TimeRemainingSeconds--;
+
+        var minutes = TimeRemainingSeconds / 60;
+        var seconds = TimeRemainingSeconds % 60;
+        TimerDisplay = $"{minutes:00}:{seconds:00}";
+
+        if (TimeRemainingSeconds <= 0)
+        {
+            _timer.Stop();
+            IsTimerRunning = false;
+            TimeRemainingSeconds = 0;
+            TimerDisplay = "00:00";
+
+            await Application.Current.MainPage.DisplayAlert(
+                "Temporizador",
+                "¡Misión Completada! Has ganado 50 XP",
+                "OK");
+
+            await AddExperienceAsync(50);
+        }
     }
 
     public async Task InitializeAsync()
@@ -44,6 +82,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         // Carga inicial de datos cuando el ViewModel está listo para usarse.
+        CurrentUserProfile = await _databaseService.GetUserProfileAsync();
         await LoadTasksAsync();
         await LoadHabitsAsync();
         await LoadDailiesAsync();
@@ -77,16 +116,19 @@ public partial class MainViewModel : ObservableObject
         Dailies = new ObservableCollection<DailyItem>(dailyList);
     }
 
-    private void AddExperience(int amount)
+    private async Task AddExperienceAsync(int amount)
     {
         // Suma experiencia y sube de nivel por cada tramo de 100 XP.
-        CurrentXP += amount;
+        CurrentUserProfile.CurrentXP += amount;
 
-        while (CurrentXP >= 100)
+        while (CurrentUserProfile.CurrentXP >= 100)
         {
-            CurrentLevel++;
-            CurrentXP -= 100;
+            CurrentUserProfile.Level++;
+            CurrentUserProfile.CurrentXP -= 100;
         }
+
+        await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+        OnPropertyChanged(nameof(CurrentUserProfile));
     }
 
     [RelayCommand]
@@ -184,10 +226,49 @@ public partial class MainViewModel : ObservableObject
         await _databaseService.SaveTaskAsync(task);
 
         // Suma experiencia por completar una tarea.
-        AddExperience(50);
+        await AddExperienceAsync(50);
 
         // Recarga las tareas para reflejar el estado actualizado.
         await LoadTasksAsync();
+    }
+
+    [RelayCommand]
+    private Task StartTimerAsync()
+    {
+        if (IsTimerRunning)
+        {
+            return Task.CompletedTask;
+        }
+
+        // Arranca el temporizador de concentración.
+        IsTimerRunning = true;
+        _timer.Start();
+        return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private async Task StopTimerAsync()
+    {
+        // Pausa el temporizador y pregunta si el usuario se rinde.
+        _timer.Stop();
+
+        var surrender = await Application.Current.MainPage.DisplayAlert(
+            "Detener temporizador",
+            "¿Te rindes en esta misión?",
+            "Sí",
+            "No");
+
+        if (surrender)
+        {
+            TimeRemainingSeconds = 1500;
+            TimerDisplay = "25:00";
+            IsTimerRunning = false;
+            return;
+        }
+
+        // Si no se rinde, reanuda el temporizador.
+        IsTimerRunning = true;
+        _timer.Start();
     }
 
     [RelayCommand]
@@ -201,14 +282,18 @@ public partial class MainViewModel : ObservableObject
         // Si es hábito positivo, suma XP y revisa subida de nivel.
         if (habit.IsPositive)
         {
-            AddExperience(10);
+            await AddExperienceAsync(10);
         }
 
         // Si es hábito negativo, resta XP sin bajar de 0.
         if (habit.IsNegative)
         {
-            CurrentXP = Math.Max(0, CurrentXP - 10);
+            CurrentUserProfile.CurrentXP = Math.Max(0, CurrentUserProfile.CurrentXP - 10);
         }
+
+        // Guarda el perfil tras los cambios de experiencia.
+        await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+        OnPropertyChanged(nameof(CurrentUserProfile));
 
         // Guarda el hábito en base de datos.
         await _databaseService.SaveHabitAsync(habit);
@@ -227,7 +312,7 @@ public partial class MainViewModel : ObservableObject
         daily.LastCompletedDate = DateTime.Today;
 
         // Suma XP por completar el daily y revisa subida de nivel.
-        AddExperience(20);
+        await AddExperienceAsync(20);
 
         // Guarda cambios en base de datos.
         await _databaseService.SaveDailyAsync(daily);
