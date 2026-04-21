@@ -30,7 +30,7 @@ public partial class MainViewModel : ObservableObject
 
     // Perfil actual del usuario (nivel y experiencia persistidos).
     [ObservableProperty]
-    private UserProfile currentUserProfile = new() { Id = 1, Level = 1, CurrentXP = 0, Coins = 0 };
+    private UserProfile currentUserProfile = new() { Id = 1, Level = 1, CurrentXP = 0, Coins = 0, Health = 50, MaxHealth = 50 };
 
     // Indica si el temporizador está en marcha.
     [ObservableProperty]
@@ -334,10 +334,24 @@ public partial class MainViewModel : ObservableObject
             await AddExperienceAsync(10, 10);
         }
 
-        // Si es hábito negativo, resta XP sin bajar de 0.
+        // Si es hábito negativo, resta salud.
         if (habit.IsNegative)
         {
-            CurrentUserProfile.CurrentXP = Math.Max(0, CurrentUserProfile.CurrentXP - 10);
+            CurrentUserProfile.Health -= 10;
+
+            // Si no queda salud, aplica penalización tipo Game Over.
+            if (CurrentUserProfile.Health <= 0)
+            {
+                await Application.Current.MainPage.DisplayAlert(
+                    "¡Caíste en batalla!",
+                    "Has perdido toda tu salud. Pierdes 1 Nivel y 10 monedas.",
+                    "Resucitar");
+
+                CurrentUserProfile.Level = Math.Max(1, CurrentUserProfile.Level - 1);
+                CurrentUserProfile.Coins = Math.Max(0, CurrentUserProfile.Coins - 10);
+                CurrentUserProfile.CurrentXP = 0;
+                CurrentUserProfile.Health = CurrentUserProfile.MaxHealth;
+            }
         }
 
         // Guarda el perfil tras los cambios de experiencia.

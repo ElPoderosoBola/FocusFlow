@@ -12,5 +12,9 @@ namespace FocusFlow.Models
         public int CurrentXP { get; set; } = 0;
 
         public int Coins { get; set; } = 0;
+
+        public int Health { get; set; } = 50;
+
+        public int MaxHealth { get; set; } = 50;
     }
 }
