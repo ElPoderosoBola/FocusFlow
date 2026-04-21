@@ -24,9 +24,13 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<DailyItem> dailies = new();
 
+    // Lista observable de recompensas.
+    [ObservableProperty]
+    private ObservableCollection<RewardItem> rewards = new();
+
     // Perfil actual del usuario (nivel y experiencia persistidos).
     [ObservableProperty]
-    private UserProfile currentUserProfile = new() { Id = 1, Level = 1, CurrentXP = 0 };
+    private UserProfile currentUserProfile = new() { Id = 1, Level = 1, CurrentXP = 0, Coins = 0 };
 
     // Indica si el temporizador está en marcha.
     [ObservableProperty]
@@ -70,7 +74,7 @@ public partial class MainViewModel : ObservableObject
                 "¡Misión Completada! Has ganado 50 XP",
                 "OK");
 
-            await AddExperienceAsync(50);
+            await AddExperienceAsync(50, 10);
         }
     }
 
@@ -86,6 +90,7 @@ public partial class MainViewModel : ObservableObject
         await LoadTasksAsync();
         await LoadHabitsAsync();
         await LoadDailiesAsync();
+        await LoadRewardsAsync();
         _isInitialized = true;
     }
 
@@ -116,10 +121,20 @@ public partial class MainViewModel : ObservableObject
         Dailies = new ObservableCollection<DailyItem>(dailyList);
     }
 
-    private async Task AddExperienceAsync(int amount)
+    public async Task LoadRewardsAsync()
     {
-        // Suma experiencia y sube de nivel por cada tramo de 100 XP.
+        // Lee todas las recompensas guardadas en SQLite.
+        var rewardList = await _databaseService.GetRewardsAsync();
+
+        // Reemplaza la colección para refrescar la vista.
+        Rewards = new ObservableCollection<RewardItem>(rewardList);
+    }
+
+    private async Task AddExperienceAsync(int amount, int coinsToAdd = 0)
+    {
+        // Suma experiencia y monedas, y sube de nivel por cada tramo de 100 XP.
         CurrentUserProfile.CurrentXP += amount;
+        CurrentUserProfile.Coins += coinsToAdd;
 
         while (CurrentUserProfile.CurrentXP >= 100)
         {
@@ -214,6 +229,40 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task AddNewRewardAsync()
+    {
+        // Pide el título de la nueva recompensa.
+        var title = await Application.Current.MainPage.DisplayPromptAsync(
+            "Nueva Recompensa",
+            "¿Qué recompensa quieres añadir?");
+
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            return;
+        }
+
+        // Pide el coste de la recompensa en monedas.
+        var costText = await Application.Current.MainPage.DisplayPromptAsync(
+            "Coste de Recompensa",
+            "¿Cuántas monedas cuesta?");
+
+        if (string.IsNullOrWhiteSpace(costText) || !int.TryParse(costText, out var cost) || cost < 0)
+        {
+            return;
+        }
+
+        var newReward = new RewardItem
+        {
+            Title = title.Trim(),
+            Cost = cost
+        };
+
+        // Guarda la recompensa y la añade a la lista visible.
+        await _databaseService.SaveRewardAsync(newReward);
+        Rewards.Add(newReward);
+    }
+
+    [RelayCommand]
     private async Task CompleteTaskAsync(TaskItem task)
     {
         if (task is null || task.IsCompleted)
@@ -226,7 +275,7 @@ public partial class MainViewModel : ObservableObject
         await _databaseService.SaveTaskAsync(task);
 
         // Suma experiencia por completar una tarea.
-        await AddExperienceAsync(50);
+        await AddExperienceAsync(50, 10);
 
         // Recarga las tareas para reflejar el estado actualizado.
         await LoadTasksAsync();
@@ -282,7 +331,7 @@ public partial class MainViewModel : ObservableObject
         // Si es hábito positivo, suma XP y revisa subida de nivel.
         if (habit.IsPositive)
         {
-            await AddExperienceAsync(10);
+            await AddExperienceAsync(10, 10);
         }
 
         // Si es hábito negativo, resta XP sin bajar de 0.
@@ -312,12 +361,39 @@ public partial class MainViewModel : ObservableObject
         daily.LastCompletedDate = DateTime.Today;
 
         // Suma XP por completar el daily y revisa subida de nivel.
-        await AddExperienceAsync(20);
+        await AddExperienceAsync(20, 10);
 
         // Guarda cambios en base de datos.
         await _databaseService.SaveDailyAsync(daily);
 
         // Recarga dailies para reflejar el estado actualizado.
         await LoadDailiesAsync();
+    }
+
+    [RelayCommand]
+    private async Task BuyRewardAsync(RewardItem reward)
+    {
+        if (reward is null)
+        {
+            return;
+        }
+
+        if (CurrentUserProfile.Coins >= reward.Cost)
+        {
+            CurrentUserProfile.Coins -= reward.Cost;
+            await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+            OnPropertyChanged(nameof(CurrentUserProfile));
+
+            await Application.Current.MainPage.DisplayAlert(
+                "Recompensas",
+                "¡Premio comprado! Disfruta de tu recompensa",
+                "OK");
+            return;
+        }
+
+        await Application.Current.MainPage.DisplayAlert(
+            "Recompensas",
+            "No tienes suficientes monedas",
+            "OK");
     }
 }

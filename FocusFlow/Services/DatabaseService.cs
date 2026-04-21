@@ -19,6 +19,7 @@ public class DatabaseService
         await _database.CreateTableAsync<TaskItem>();
         await _database.CreateTableAsync<HabitItem>();
         await _database.CreateTableAsync<DailyItem>();
+        await _database.CreateTableAsync<RewardItem>();
         await _database.CreateTableAsync<UserProfile>();
 
         // Inserta datos de ejemplo solo si no hay tareas guardadas.
@@ -150,6 +151,39 @@ public class DatabaseService
         return await _database!.DeleteAsync(item);
     }
 
+    // CRUD de recompensas.
+    public async Task<List<RewardItem>> GetRewardsAsync()
+    {
+        await InitAsync();
+        return await _database!.Table<RewardItem>().ToListAsync();
+    }
+
+    public async Task<RewardItem?> GetRewardByIdAsync(int id)
+    {
+        await InitAsync();
+        return await _database!.Table<RewardItem>()
+            .Where(r => r.Id == id)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<int> SaveRewardAsync(RewardItem item)
+    {
+        await InitAsync();
+
+        if (item.Id == 0)
+        {
+            return await _database!.InsertAsync(item);
+        }
+
+        return await _database!.UpdateAsync(item);
+    }
+
+    public async Task<int> DeleteRewardAsync(RewardItem item)
+    {
+        await InitAsync();
+        return await _database!.DeleteAsync(item);
+    }
+
     // Perfil del usuario (nivel y experiencia).
     public async Task<UserProfile> GetUserProfileAsync()
     {
@@ -166,7 +200,8 @@ public class DatabaseService
         {
             Id = 1,
             Level = 1,
-            CurrentXP = 0
+            CurrentXP = 0,
+            Coins = 0
         };
 
         await _database.InsertAsync(newProfile);

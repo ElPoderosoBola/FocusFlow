@@ -10,5 +10,7 @@ namespace FocusFlow.Models
         public int Level { get; set; } = 1;
 
         public int CurrentXP { get; set; } = 0;
+
+        public int Coins { get; set; } = 0;
     }
 }
