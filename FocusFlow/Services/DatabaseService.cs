@@ -20,7 +20,11 @@ public class DatabaseService
         await _database.CreateTableAsync<HabitItem>();
         await _database.CreateTableAsync<DailyItem>();
         await _database.CreateTableAsync<RewardItem>();
+        await _database.CreateTableAsync<AchievementItem>();
         await _database.CreateTableAsync<UserProfile>();
+
+        // Inserta logros por defecto si la tabla está vacía.
+        await SeedAchievementsAsync();
 
         // Inserta datos de ejemplo solo si no hay tareas guardadas.
         await SeedDataAsync();
@@ -182,6 +186,59 @@ public class DatabaseService
     {
         await InitAsync();
         return await _database!.DeleteAsync(item);
+    }
+
+    // Inserta logros iniciales si aún no hay ninguno.
+    private async Task SeedAchievementsAsync()
+    {
+        if (_database is null)
+        {
+            await InitAsync();
+            return;
+        }
+
+        var achievementsCount = await _database.Table<AchievementItem>().CountAsync();
+
+        if (achievementsCount > 0)
+        {
+            return;
+        }
+
+        var defaultAchievements = new List<AchievementItem>
+        {
+            new AchievementItem
+            {
+                Title = "Primeros Pasos",
+                Description = "Completa tu primera misión diaria.",
+                IsUnlocked = false
+            },
+            new AchievementItem
+            {
+                Title = "Aprendiz",
+                Description = "Alcanza el Nivel 2.",
+                IsUnlocked = false
+            },
+            new AchievementItem
+            {
+                Title = "Acaparador",
+                Description = "Consigue 50 monedas.",
+                IsUnlocked = false
+            }
+        };
+
+        await _database.InsertAllAsync(defaultAchievements);
+    }
+
+    public async Task<List<AchievementItem>> GetAchievementsAsync()
+    {
+        await InitAsync();
+        return await _database!.Table<AchievementItem>().ToListAsync();
+    }
+
+    public async Task<int> UpdateAchievementAsync(AchievementItem item)
+    {
+        await InitAsync();
+        return await _database!.UpdateAsync(item);
     }
 
     // Perfil del usuario (nivel y experiencia).

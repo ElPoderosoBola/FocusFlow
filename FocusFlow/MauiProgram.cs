@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using FocusFlow.Services;
 using FocusFlow.ViewModels;
+using Plugin.LocalNotification;
 
 namespace FocusFlow
 {
@@ -11,6 +12,7 @@ namespace FocusFlow
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseLocalNotification()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -20,6 +22,8 @@ namespace FocusFlow
             builder.Services.AddSingleton<DatabaseService>();
             builder.Services.AddTransient<MainViewModel>();
             builder.Services.AddTransient<MainPage>();
+            builder.Services.AddTransient<ProfileViewModel>();
+            builder.Services.AddTransient<ProfilePage>();
 
 #if DEBUG
     		builder.Logging.AddDebug();

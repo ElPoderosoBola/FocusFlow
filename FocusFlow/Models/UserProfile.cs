@@ -16,5 +16,7 @@ namespace FocusFlow.Models
         public int Health { get; set; } = 50;
 
         public int MaxHealth { get; set; } = 50;
+
+        public DateTime LastLoginDate { get; set; } = DateTime.Today;
     }
 }

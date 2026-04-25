@@ -3,6 +3,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FocusFlow.Models;
 using FocusFlow.Services;
+using Plugin.LocalNotification;
+using Plugin.LocalNotification.Core.Models;
+using Plugin.LocalNotification.AndroidOption;
 
 namespace FocusFlow.ViewModels;
 
@@ -75,6 +78,7 @@ public partial class MainViewModel : ObservableObject
                 "OK");
 
             await AddExperienceAsync(50, 10);
+            await CheckAchievementsAsync();
         }
     }
 
@@ -90,8 +94,73 @@ public partial class MainViewModel : ObservableObject
         await LoadTasksAsync();
         await LoadHabitsAsync();
         await LoadDailiesAsync();
+
+        // Aplica penalización diaria si pasó al menos un día desde el último acceso.
+        if (CurrentUserProfile.LastLoginDate.Date < DateTime.Today)
+        {
+            var misionesFalladas = Dailies.Count(d => !d.IsCompletedToday);
+            int damage = misionesFalladas * 10;
+
+            if (damage > 0)
+            {
+                CurrentUserProfile.Health -= damage;
+
+                // Si no queda salud, aplica la lógica de Game Over.
+                if (CurrentUserProfile.Health <= 0)
+                {
+                    await Application.Current.MainPage.DisplayAlert(
+                        "¡Caíste en batalla!",
+                        "Has perdido toda tu salud. Pierdes 1 Nivel y 10 monedas.",
+                        "Resucitar");
+
+                    CurrentUserProfile.Level = Math.Max(1, CurrentUserProfile.Level - 1);
+                    CurrentUserProfile.Coins = Math.Max(0, CurrentUserProfile.Coins - 10);
+                    CurrentUserProfile.CurrentXP = 0;
+                    CurrentUserProfile.Health = CurrentUserProfile.MaxHealth;
+                }
+            }
+
+            // Reinicia todos los dailies para el nuevo día y los guarda.
+            foreach (var daily in Dailies)
+            {
+                daily.IsCompletedToday = false;
+                await _databaseService.SaveDailyAsync(daily);
+            }
+
+            // Guarda la nueva fecha de acceso y el perfil actualizado.
+            CurrentUserProfile.LastLoginDate = DateTime.Today;
+            await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+            OnPropertyChanged(nameof(CurrentUserProfile));
+            await LoadDailiesAsync();
+        }
+
         await LoadRewardsAsync();
+        await ScheduleDailyReminderAsync();
         _isInitialized = true;
+    }
+
+    private async Task ScheduleDailyReminderAsync()
+    {
+        // Pide permisos de notificación si todavía no están aceptados.
+        if (await LocalNotificationCenter.Current.AreNotificationsEnabled() == false)
+        {
+            await LocalNotificationCenter.Current.RequestNotificationPermission();
+        }
+
+        // Programa recordatorio diario para que no se pierda la racha.
+        var request = new NotificationRequest
+        {
+            NotificationId = 100,
+            Title = "¡Despierta, Héroe!",
+            Description = "Tus misiones diarias te esperan. ¡No pierdas tu racha y evita recibir daño!",
+            Schedule = new NotificationRequestSchedule
+            {
+                NotifyTime = DateTime.Today.AddDays(1).AddHours(9),
+                RepeatType = NotificationRepeat.Daily
+            }
+        };
+
+        await LocalNotificationCenter.Current.Show(request);
     }
 
     public async Task LoadTasksAsync()
@@ -144,6 +213,67 @@ public partial class MainViewModel : ObservableObject
 
         await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
         OnPropertyChanged(nameof(CurrentUserProfile));
+    }
+
+    private async Task CheckAchievementsAsync()
+    {
+        // Revisa todos los logros y desbloquea los que cumplan condición.
+        var achievements = await _databaseService.GetAchievementsAsync();
+        var unlockedAny = false;
+
+        var apprentice = achievements.FirstOrDefault(a => a.Title == "Aprendiz");
+        if (apprentice is not null && !apprentice.IsUnlocked && CurrentUserProfile.Level >= 2)
+        {
+            apprentice.IsUnlocked = true;
+            CurrentUserProfile.Coins += 20;
+            await _databaseService.UpdateAchievementAsync(apprentice);
+            await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+
+            await Application.Current.MainPage.DisplayAlert(
+                "🏆 ¡Logro Desbloqueado!",
+                "Aprendiz: Alcanza el Nivel 2.\n¡Ganas 20 monedas!",
+                "¡Genial!");
+
+            unlockedAny = true;
+        }
+
+        var hoarder = achievements.FirstOrDefault(a => a.Title == "Acaparador");
+        if (hoarder is not null && !hoarder.IsUnlocked && CurrentUserProfile.Coins >= 50)
+        {
+            hoarder.IsUnlocked = true;
+            CurrentUserProfile.Coins += 20;
+            await _databaseService.UpdateAchievementAsync(hoarder);
+            await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+
+            await Application.Current.MainPage.DisplayAlert(
+                "🏆 ¡Logro Desbloqueado!",
+                "Acaparador: Consigue 50 monedas.\n¡Ganas 20 monedas!",
+                "¡Genial!");
+
+            unlockedAny = true;
+        }
+
+        var firstSteps = achievements.FirstOrDefault(a => a.Title == "Primeros Pasos");
+        var hasProgress = CurrentUserProfile.CurrentXP > 0 || Tasks.Any(t => t.IsCompleted) || Dailies.Any(d => d.IsCompletedToday);
+        if (firstSteps is not null && !firstSteps.IsUnlocked && hasProgress)
+        {
+            firstSteps.IsUnlocked = true;
+            CurrentUserProfile.Coins += 20;
+            await _databaseService.UpdateAchievementAsync(firstSteps);
+            await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+
+            await Application.Current.MainPage.DisplayAlert(
+                "🏆 ¡Logro Desbloqueado!",
+                "Primeros Pasos: Completa tu primera misión diaria.\n¡Ganas 20 monedas!",
+                "¡Genial!");
+
+            unlockedAny = true;
+        }
+
+        if (unlockedAny)
+        {
+            OnPropertyChanged(nameof(CurrentUserProfile));
+        }
     }
 
     [RelayCommand]
@@ -279,6 +409,7 @@ public partial class MainViewModel : ObservableObject
 
         // Recarga las tareas para reflejar el estado actualizado.
         await LoadTasksAsync();
+        await CheckAchievementsAsync();
     }
 
     [RelayCommand]
@@ -360,6 +491,7 @@ public partial class MainViewModel : ObservableObject
 
         // Guarda el hábito en base de datos.
         await _databaseService.SaveHabitAsync(habit);
+        await CheckAchievementsAsync();
     }
 
     [RelayCommand]
@@ -382,6 +514,7 @@ public partial class MainViewModel : ObservableObject
 
         // Recarga dailies para reflejar el estado actualizado.
         await LoadDailiesAsync();
+        await CheckAchievementsAsync();
     }
 
     [RelayCommand]

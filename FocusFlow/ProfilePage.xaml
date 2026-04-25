@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodel="clr-namespace:FocusFlow.ViewModels"
+             xmlns:models="clr-namespace:FocusFlow.Models"
+             x:Class="FocusFlow.ProfilePage"
+             x:DataType="viewmodel:ProfileViewModel"
+             Title="Mi Perfil"
+             BackgroundColor="Black">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="20">
+
+            <Label Text="MI PERFIL"
+                   FontSize="30"
+                   FontAttributes="Bold"
+                   TextColor="White" />
+
+            <Border BackgroundColor="#1D1D1D" StrokeThickness="0" Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Nivel" TextColor="Gray" FontSize="14" />
+                    <Label Text="{Binding CurrentUserProfile.Level}" TextColor="White" FontSize="26" FontAttributes="Bold" />
+
+                    <Label Text="Experiencia" TextColor="Gray" FontSize="14" />
+                    <Label Text="{Binding CurrentUserProfile.CurrentXP}" TextColor="White" FontSize="20" />
+
+                    <Label Text="Monedas" TextColor="Gray" FontSize="14" />
+                    <Label Text="{Binding CurrentUserProfile.Coins}" TextColor="#FFB900" FontSize="20" FontAttributes="Bold" />
+
+                    <Label Text="Salud" TextColor="Gray" FontSize="14" />
+                    <Label Text="{Binding CurrentUserProfile.Health}" TextColor="#E81123" FontSize="20" FontAttributes="Bold" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="LOGROS"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   TextColor="White" />
+
+            <CollectionView ItemsSource="{Binding Achievements}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:AchievementItem">
+                        <Border BackgroundColor="#1D1D1D" StrokeThickness="0" Padding="15" Margin="0,0,0,10">
+                            <VerticalStackLayout Spacing="5">
+                                <Label Text="{Binding Title}" TextColor="White" FontSize="18" FontAttributes="Bold" />
+                                <Label Text="{Binding Description}" TextColor="Gray" FontSize="14" />
+                                <Label Text="{Binding IsUnlocked, StringFormat='Desbloqueado: {0}'}" TextColor="#00A4EF" FontSize="12" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
