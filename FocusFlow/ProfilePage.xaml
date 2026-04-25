@@ -5,51 +5,112 @@
              xmlns:models="clr-namespace:FocusFlow.Models"
              x:Class="FocusFlow.ProfilePage"
              x:DataType="viewmodel:ProfileViewModel"
-             Title="Mi Perfil"
              BackgroundColor="Black">
 
     <ScrollView>
-        <VerticalStackLayout Padding="20" Spacing="20">
+        <VerticalStackLayout Spacing="25" Padding="0,0,0,30">
 
-            <Label Text="MI PERFIL"
-                   FontSize="30"
-                   FontAttributes="Bold"
-                   TextColor="White" />
+            <Border BackgroundColor="#1D1D1D" 
+                    StrokeThickness="0" 
+                    Padding="30"
+                    Margin="0,0,0,10">
+                <VerticalStackLayout Spacing="15" HorizontalOptions="Center">
 
-            <Border BackgroundColor="#1D1D1D" StrokeThickness="0" Padding="15">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Nivel" TextColor="Gray" FontSize="14" />
-                    <Label Text="{Binding CurrentUserProfile.Level}" TextColor="White" FontSize="26" FontAttributes="Bold" />
+                    <Label Text="PERFIL DE HÉROE" 
+                           FontSize="12" 
+                           TextColor="#00A4EF" 
+                           HorizontalOptions="Center" 
+                           CharacterSpacing="2" 
+                           FontAttributes="Bold"/>
 
-                    <Label Text="Experiencia" TextColor="Gray" FontSize="14" />
-                    <Label Text="{Binding CurrentUserProfile.CurrentXP}" TextColor="White" FontSize="20" />
+                    <Label Text="{Binding CurrentUserProfile.Level, StringFormat='NIVEL {0}'}"
+                           FontSize="48"
+                           FontAttributes="Bold"
+                           TextColor="White"
+                           HorizontalOptions="Center" />
 
-                    <Label Text="Monedas" TextColor="Gray" FontSize="14" />
-                    <Label Text="{Binding CurrentUserProfile.Coins}" TextColor="#FFB900" FontSize="20" FontAttributes="Bold" />
+                    <HorizontalStackLayout Spacing="25" HorizontalOptions="Center">
+                        <Label Text="{Binding CurrentUserProfile.Health, StringFormat='❤️ {0}'}"
+                               TextColor="#E81123"
+                               FontSize="20"
+                               FontAttributes="Bold"/>
+                        <Label Text="/" TextColor="Gray" FontSize="20"/>
+                        <Label Text="{Binding CurrentUserProfile.MaxHealth}"
+                               TextColor="Gray"
+                               FontSize="20"
+                               FontAttributes="Bold"/>
+                    </HorizontalStackLayout>
 
-                    <Label Text="Salud" TextColor="Gray" FontSize="14" />
-                    <Label Text="{Binding CurrentUserProfile.Health}" TextColor="#E81123" FontSize="20" FontAttributes="Bold" />
+                    <Label Text="{Binding CurrentUserProfile.Coins, StringFormat='💰 {0} MONEDAS'}"
+                           TextColor="#FFB900"
+                           FontSize="22"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center" />
                 </VerticalStackLayout>
             </Border>
 
-            <Label Text="LOGROS"
-                   FontSize="24"
-                   FontAttributes="Bold"
-                   TextColor="White" />
+            <VerticalStackLayout Spacing="20" Padding="20,0">
 
-            <CollectionView ItemsSource="{Binding Achievements}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="models:AchievementItem">
-                        <Border BackgroundColor="#1D1D1D" StrokeThickness="0" Padding="15" Margin="0,0,0,10">
-                            <VerticalStackLayout Spacing="5">
-                                <Label Text="{Binding Title}" TextColor="White" FontSize="18" FontAttributes="Bold" />
-                                <Label Text="{Binding Description}" TextColor="Gray" FontSize="14" />
-                                <Label Text="{Binding IsUnlocked, StringFormat='Desbloqueado: {0}'}" TextColor="#00A4EF" FontSize="12" />
-                            </VerticalStackLayout>
-                        </Border>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+                <Label Text="MIS LOGROS" 
+                       FontSize="28" 
+                       FontAttributes="Bold" 
+                       TextColor="White" />
+
+                <CollectionView ItemsSource="{Binding Achievements}">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" Span="2" VerticalItemSpacing="15" HorizontalItemSpacing="15" />
+                    </CollectionView.ItemsLayout>
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:AchievementItem">
+                            <Border StrokeThickness="0" Padding="15" HeightRequest="140">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="BackgroundColor" Value="#222222" />
+                                        <Style.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding IsUnlocked}" Value="True">
+                                                <Setter Property="BackgroundColor" Value="#FFB900" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+
+                                <VerticalStackLayout VerticalOptions="Center" Spacing="5">
+                                    <Label Text="{Binding Title}" 
+                                           FontSize="16" 
+                                           FontAttributes="Bold">
+                                        <Label.Style>
+                                            <Style TargetType="Label">
+                                                <Setter Property="TextColor" Value="#555555" />
+                                                <Style.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsUnlocked}" Value="True">
+                                                        <Setter Property="TextColor" Value="Black" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Label.Style>
+                                    </Label>
+
+                                    <Label Text="{Binding Description}" 
+                                           FontSize="11" 
+                                           LineBreakMode="WordWrap">
+                                        <Label.Style>
+                                            <Style TargetType="Label">
+                                                <Setter Property="TextColor" Value="#444444" />
+                                                <Style.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding IsUnlocked}" Value="True">
+                                                        <Setter Property="TextColor" Value="#222222" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Label.Style>
+                                    </Label>
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
 
         </VerticalStackLayout>
     </ScrollView>
