@@ -7,10 +7,14 @@ namespace FocusFlow.Models
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
 
+        public int UserId { get; set; }
+
         public string Title { get; set; }
 
         public bool IsPositive { get; set; }
 
         public bool IsNegative { get; set; }
+
+        public string ImagePath { get; set; }
     }
 }

@@ -14,6 +14,8 @@ public partial class MainViewModel : ObservableObject
     private readonly DatabaseService _databaseService;
     private bool _isInitialized;
     private IDispatcherTimer _timer;
+    private int _currentUserId = 1;
+    private string? _pendingImagePath;
 
     // Lista observable para que la UI se actualice cuando cambien las tareas.
     [ObservableProperty]
@@ -153,11 +155,7 @@ public partial class MainViewModel : ObservableObject
             NotificationId = 100,
             Title = "¡Despierta, Héroe!",
             Description = "Tus misiones diarias te esperan. ¡No pierdas tu racha y evita recibir daño!",
-            Schedule = new NotificationRequestSchedule
-            {
-                NotifyTime = DateTime.Today.AddDays(1).AddHours(9),
-                RepeatType = NotificationRepeat.Daily
-            }
+            Schedule = new NotificationRequestSchedule { NotifyTime = DateTime.Now.AddSeconds(10) }
         };
 
         await LocalNotificationCenter.Current.Show(request);
@@ -166,7 +164,7 @@ public partial class MainViewModel : ObservableObject
     public async Task LoadTasksAsync()
     {
         // Lee todas las tareas guardadas en SQLite.
-        var taskList = await _databaseService.GetTasksAsync();
+        var taskList = await _databaseService.GetTasksAsync(_currentUserId);
 
         // Reemplaza la colección para refrescar la vista.
         Tasks = new ObservableCollection<TaskItem>(taskList);
@@ -175,7 +173,7 @@ public partial class MainViewModel : ObservableObject
     public async Task LoadHabitsAsync()
     {
         // Lee todos los hábitos guardados en SQLite.
-        var habitList = await _databaseService.GetHabitsAsync();
+        var habitList = await _databaseService.GetHabitsAsync(_currentUserId);
 
         // Reemplaza la colección para refrescar la vista.
         Habits = new ObservableCollection<HabitItem>(habitList);
@@ -184,7 +182,7 @@ public partial class MainViewModel : ObservableObject
     public async Task LoadDailiesAsync()
     {
         // Lee todos los dailies guardados en SQLite.
-        var dailyList = await _databaseService.GetDailiesAsync();
+        var dailyList = await _databaseService.GetDailiesAsync(_currentUserId);
 
         // Reemplaza la colección para refrescar la vista.
         Dailies = new ObservableCollection<DailyItem>(dailyList);
@@ -193,7 +191,7 @@ public partial class MainViewModel : ObservableObject
     public async Task LoadRewardsAsync()
     {
         // Lee todas las recompensas guardadas en SQLite.
-        var rewardList = await _databaseService.GetRewardsAsync();
+        var rewardList = await _databaseService.GetRewardsAsync(_currentUserId);
 
         // Reemplaza la colección para refrescar la vista.
         Rewards = new ObservableCollection<RewardItem>(rewardList);
@@ -277,6 +275,14 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task PickImageAsync()
+    {
+        // Permite elegir una imagen para asociarla al siguiente elemento que se cree.
+        var photo = await MediaPicker.Default.PickPhotoAsync();
+        _pendingImagePath = photo?.FullPath;
+    }
+
+    [RelayCommand]
     private async Task AddNewHabitAsync()
     {
         // Abre un cuadro nativo para pedir el título del nuevo hábito.
@@ -291,9 +297,11 @@ public partial class MainViewModel : ObservableObject
 
         var newHabit = new HabitItem
         {
+            UserId = _currentUserId,
             Title = title.Trim(),
             IsPositive = true,
-            IsNegative = false
+            IsNegative = false,
+            ImagePath = _pendingImagePath
         };
 
         // Guarda el nuevo hábito en SQLite.
@@ -301,6 +309,7 @@ public partial class MainViewModel : ObservableObject
 
         // Lo añade a la colección para refrescar la UI al instante.
         Habits.Add(newHabit);
+        _pendingImagePath = null;
     }
 
     [RelayCommand]
@@ -318,10 +327,12 @@ public partial class MainViewModel : ObservableObject
 
         var newDaily = new DailyItem
         {
+            UserId = _currentUserId,
             Title = title.Trim(),
             IsCompletedToday = false,
             LastCompletedDate = DateTime.MinValue,
-            Streak = 0
+            Streak = 0,
+            ImagePath = _pendingImagePath
         };
 
         // Guarda el nuevo daily en SQLite.
@@ -329,6 +340,7 @@ public partial class MainViewModel : ObservableObject
 
         // Lo añade a la colección para refrescar la UI al instante.
         Dailies.Add(newDaily);
+        _pendingImagePath = null;
     }
 
     [RelayCommand]
@@ -346,9 +358,11 @@ public partial class MainViewModel : ObservableObject
 
         var newTask = new TaskItem
         {
+            UserId = _currentUserId,
             Title = title.Trim(),
             EstimatedMinutes = 25,
-            IsCompleted = false
+            IsCompleted = false,
+            ImagePath = _pendingImagePath
         };
 
         // Guarda la nueva tarea en SQLite.
@@ -356,6 +370,7 @@ public partial class MainViewModel : ObservableObject
 
         // La añade a la colección para refrescar la UI al instante.
         Tasks.Add(newTask);
+        _pendingImagePath = null;
     }
 
     [RelayCommand]
@@ -383,13 +398,52 @@ public partial class MainViewModel : ObservableObject
 
         var newReward = new RewardItem
         {
+            UserId = _currentUserId,
             Title = title.Trim(),
-            Cost = cost
+            Cost = cost,
+            ImagePath = _pendingImagePath
         };
 
         // Guarda la recompensa y la añade a la lista visible.
         await _databaseService.SaveRewardAsync(newReward);
         Rewards.Add(newReward);
+        _pendingImagePath = null;
+    }
+
+    [RelayCommand]
+    private async Task DeleteTaskAsync(TaskItem task)
+    {
+        if (task is null)
+        {
+            return;
+        }
+
+        await _databaseService.DeleteTaskAsync(task);
+        Tasks.Remove(task);
+    }
+
+    [RelayCommand]
+    private async Task DeleteHabitAsync(HabitItem habit)
+    {
+        if (habit is null)
+        {
+            return;
+        }
+
+        await _databaseService.DeleteHabitAsync(habit);
+        Habits.Remove(habit);
+    }
+
+    [RelayCommand]
+    private async Task DeleteDailyAsync(DailyItem daily)
+    {
+        if (daily is null)
+        {
+            return;
+        }
+
+        await _databaseService.DeleteDailyAsync(daily);
+        Dailies.Remove(daily);
     }
 
     [RelayCommand]

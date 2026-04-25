@@ -22,6 +22,7 @@ public class DatabaseService
         await _database.CreateTableAsync<RewardItem>();
         await _database.CreateTableAsync<AchievementItem>();
         await _database.CreateTableAsync<UserProfile>();
+        await _database.CreateTableAsync<User>();
 
         // Inserta logros por defecto si la tabla está vacía.
         await SeedAchievementsAsync();
@@ -57,17 +58,19 @@ public class DatabaseService
         await _database.InsertAllAsync(sampleTasks);
     }
 
-    public async Task<List<TaskItem>> GetTasksAsync()
-    {
-        await InitAsync();
-        return await _database!.Table<TaskItem>().ToListAsync();
-    }
-
-    public async Task<TaskItem?> GetTaskByIdAsync(int id)
+    public async Task<List<TaskItem>> GetTasksAsync(int userId)
     {
         await InitAsync();
         return await _database!.Table<TaskItem>()
-            .Where(t => t.Id == id)
+            .Where(t => t.UserId == userId)
+            .ToListAsync();
+    }
+
+    public async Task<TaskItem?> GetTaskByIdAsync(int id, int userId)
+    {
+        await InitAsync();
+        return await _database!.Table<TaskItem>()
+            .Where(t => t.Id == id && t.UserId == userId)
             .FirstOrDefaultAsync();
     }
 
@@ -90,17 +93,19 @@ public class DatabaseService
     }
 
     // CRUD de hábitos.
-    public async Task<List<HabitItem>> GetHabitsAsync()
-    {
-        await InitAsync();
-        return await _database!.Table<HabitItem>().ToListAsync();
-    }
-
-    public async Task<HabitItem?> GetHabitByIdAsync(int id)
+    public async Task<List<HabitItem>> GetHabitsAsync(int userId)
     {
         await InitAsync();
         return await _database!.Table<HabitItem>()
-            .Where(h => h.Id == id)
+            .Where(h => h.UserId == userId)
+            .ToListAsync();
+    }
+
+    public async Task<HabitItem?> GetHabitByIdAsync(int id, int userId)
+    {
+        await InitAsync();
+        return await _database!.Table<HabitItem>()
+            .Where(h => h.Id == id && h.UserId == userId)
             .FirstOrDefaultAsync();
     }
 
@@ -123,17 +128,19 @@ public class DatabaseService
     }
 
     // CRUD de dailies.
-    public async Task<List<DailyItem>> GetDailiesAsync()
-    {
-        await InitAsync();
-        return await _database!.Table<DailyItem>().ToListAsync();
-    }
-
-    public async Task<DailyItem?> GetDailyByIdAsync(int id)
+    public async Task<List<DailyItem>> GetDailiesAsync(int userId)
     {
         await InitAsync();
         return await _database!.Table<DailyItem>()
-            .Where(d => d.Id == id)
+            .Where(d => d.UserId == userId)
+            .ToListAsync();
+    }
+
+    public async Task<DailyItem?> GetDailyByIdAsync(int id, int userId)
+    {
+        await InitAsync();
+        return await _database!.Table<DailyItem>()
+            .Where(d => d.Id == id && d.UserId == userId)
             .FirstOrDefaultAsync();
     }
 
@@ -156,17 +163,44 @@ public class DatabaseService
     }
 
     // CRUD de recompensas.
-    public async Task<List<RewardItem>> GetRewardsAsync()
-    {
-        await InitAsync();
-        return await _database!.Table<RewardItem>().ToListAsync();
-    }
-
-    public async Task<RewardItem?> GetRewardByIdAsync(int id)
+    public async Task<List<RewardItem>> GetRewardsAsync(int userId)
     {
         await InitAsync();
         return await _database!.Table<RewardItem>()
-            .Where(r => r.Id == id)
+            .Where(r => r.UserId == userId)
+            .ToListAsync();
+    }
+
+    public async Task<RewardItem?> GetRewardByIdAsync(int id, int userId)
+    {
+        await InitAsync();
+        return await _database!.Table<RewardItem>()
+            .Where(r => r.Id == id && r.UserId == userId)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<bool> RegisterUserAsync(User user)
+    {
+        await InitAsync();
+
+        var exists = await _database!.Table<User>()
+            .Where(u => u.Username == user.Username)
+            .FirstOrDefaultAsync();
+
+        if (exists is not null)
+        {
+            return false;
+        }
+
+        await _database.InsertAsync(user);
+        return true;
+    }
+
+    public async Task<User?> LoginUserAsync(string username, string password)
+    {
+        await InitAsync();
+        return await _database!.Table<User>()
+            .Where(u => u.Username == username && u.Password == password)
             .FirstOrDefaultAsync();
     }
 
