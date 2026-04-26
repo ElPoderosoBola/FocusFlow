@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodel="clr-namespace:FocusFlow.ViewModels"
+             x:Class="FocusFlow.LoginPage"
+             x:DataType="viewmodel:LoginViewModel"
+             BackgroundColor="Black">
+
+    <VerticalStackLayout VerticalOptions="Center" Spacing="30" Padding="40">
+
+        <VerticalStackLayout Spacing="0" HorizontalOptions="Center" Margin="0,0,0,20">
+            <Label Text="FOCUS" 
+                   FontSize="48" 
+                   FontAttributes="Bold" 
+                   TextColor="White" 
+                   HorizontalOptions="Center" 
+                   CharacterSpacing="5"/>
+            <Label Text="FLOW" 
+                   FontSize="48" 
+                   FontAttributes="Bold" 
+                   TextColor="#00A4EF" 
+                   HorizontalOptions="Center" 
+                   CharacterSpacing="5" 
+                   Margin="0,-15,0,0"/>
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Spacing="15">
+            <Entry Placeholder="USUARIO" 
+                   BackgroundColor="#1D1D1D" 
+                   TextColor="White" 
+                   PlaceholderColor="Gray"
+                   HeightRequest="50"
+                   Keyboard="Text" />
+
+            <Entry Placeholder="CONTRASEÑA" 
+                   BackgroundColor="#1D1D1D" 
+                   TextColor="White" 
+                   PlaceholderColor="Gray"
+                   HeightRequest="50"
+                   IsPassword="True" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Spacing="15">
+            <Button Text="ENTRAR" 
+                    Command="{Binding LoginCommand}"
+                    BackgroundColor="#00A4EF" 
+                    TextColor="White" 
+                    FontAttributes="Bold"
+                    HeightRequest="60"
+                    CornerRadius="0" />
+
+            <Button Text="CREAR CUENTA" 
+                    Command="{Binding RegisterCommand}"
+                    BackgroundColor="#333333" 
+                    TextColor="White" 
+                    FontAttributes="Bold"
+                    HeightRequest="60"
+                    CornerRadius="0" />
+        </VerticalStackLayout>
+
+    </VerticalStackLayout>
+</ContentPage>

@@ -163,43 +163,30 @@ public partial class MainViewModel : ObservableObject
 
     public async Task LoadTasksAsync()
     {
-        // Lee todas las tareas guardadas en SQLite.
         var taskList = await _databaseService.GetTasksAsync(_currentUserId);
-
-        // Reemplaza la colección para refrescar la vista.
         Tasks = new ObservableCollection<TaskItem>(taskList);
     }
 
     public async Task LoadHabitsAsync()
     {
-        // Lee todos los hábitos guardados en SQLite.
         var habitList = await _databaseService.GetHabitsAsync(_currentUserId);
-
-        // Reemplaza la colección para refrescar la vista.
         Habits = new ObservableCollection<HabitItem>(habitList);
     }
 
     public async Task LoadDailiesAsync()
     {
-        // Lee todos los dailies guardados en SQLite.
         var dailyList = await _databaseService.GetDailiesAsync(_currentUserId);
-
-        // Reemplaza la colección para refrescar la vista.
         Dailies = new ObservableCollection<DailyItem>(dailyList);
     }
 
     public async Task LoadRewardsAsync()
     {
-        // Lee todas las recompensas guardadas en SQLite.
         var rewardList = await _databaseService.GetRewardsAsync(_currentUserId);
-
-        // Reemplaza la colección para refrescar la vista.
         Rewards = new ObservableCollection<RewardItem>(rewardList);
     }
 
     private async Task AddExperienceAsync(int amount, int coinsToAdd = 0)
     {
-        // Suma experiencia y monedas, y sube de nivel por cada tramo de 100 XP.
         CurrentUserProfile.CurrentXP += amount;
         CurrentUserProfile.Coins += coinsToAdd;
 
@@ -215,7 +202,6 @@ public partial class MainViewModel : ObservableObject
 
     private async Task CheckAchievementsAsync()
     {
-        // Revisa todos los logros y desbloquea los que cumplan condición.
         var achievements = await _databaseService.GetAchievementsAsync();
         var unlockedAny = false;
 
@@ -227,11 +213,7 @@ public partial class MainViewModel : ObservableObject
             await _databaseService.UpdateAchievementAsync(apprentice);
             await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
 
-            await Application.Current.MainPage.DisplayAlert(
-                "🏆 ¡Logro Desbloqueado!",
-                "Aprendiz: Alcanza el Nivel 2.\n¡Ganas 20 monedas!",
-                "¡Genial!");
-
+            await Application.Current.MainPage.DisplayAlert("🏆 ¡Logro Desbloqueado!", "Aprendiz: Alcanza el Nivel 2.\n¡Ganas 20 monedas!", "¡Genial!");
             unlockedAny = true;
         }
 
@@ -243,11 +225,7 @@ public partial class MainViewModel : ObservableObject
             await _databaseService.UpdateAchievementAsync(hoarder);
             await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
 
-            await Application.Current.MainPage.DisplayAlert(
-                "🏆 ¡Logro Desbloqueado!",
-                "Acaparador: Consigue 50 monedas.\n¡Ganas 20 monedas!",
-                "¡Genial!");
-
+            await Application.Current.MainPage.DisplayAlert("🏆 ¡Logro Desbloqueado!", "Acaparador: Consigue 50 monedas.\n¡Ganas 20 monedas!", "¡Genial!");
             unlockedAny = true;
         }
 
@@ -260,11 +238,7 @@ public partial class MainViewModel : ObservableObject
             await _databaseService.UpdateAchievementAsync(firstSteps);
             await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
 
-            await Application.Current.MainPage.DisplayAlert(
-                "🏆 ¡Logro Desbloqueado!",
-                "Primeros Pasos: Completa tu primera misión diaria.\n¡Ganas 20 monedas!",
-                "¡Genial!");
-
+            await Application.Current.MainPage.DisplayAlert("🏆 ¡Logro Desbloqueado!", "Primeros Pasos: Completa tu primera misión diaria.\n¡Ganas 20 monedas!", "¡Genial!");
             unlockedAny = true;
         }
 
@@ -277,7 +251,6 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task PickImageAsync()
     {
-        // Permite elegir una imagen para asociarla al siguiente elemento que se cree.
         var photo = await MediaPicker.Default.PickPhotoAsync();
         _pendingImagePath = photo?.FullPath;
     }
@@ -285,15 +258,8 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task AddNewHabitAsync()
     {
-        // Abre un cuadro nativo para pedir el título del nuevo hábito.
-        var title = await Application.Current.MainPage.DisplayPromptAsync(
-            "Nuevo Hábito",
-            "¿Qué hábito quieres registrar?");
-
-        if (string.IsNullOrWhiteSpace(title))
-        {
-            return;
-        }
+        var title = await Application.Current.MainPage.DisplayPromptAsync("Nuevo Hábito", "¿Qué hábito quieres registrar?");
+        if (string.IsNullOrWhiteSpace(title)) return;
 
         var newHabit = new HabitItem
         {
@@ -304,10 +270,7 @@ public partial class MainViewModel : ObservableObject
             ImagePath = _pendingImagePath
         };
 
-        // Guarda el nuevo hábito en SQLite.
         await _databaseService.SaveHabitAsync(newHabit);
-
-        // Lo añade a la colección para refrescar la UI al instante.
         Habits.Add(newHabit);
         _pendingImagePath = null;
     }
@@ -315,15 +278,8 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task AddNewDailyAsync()
     {
-        // Abre un cuadro nativo para pedir el título del nuevo daily.
-        var title = await Application.Current.MainPage.DisplayPromptAsync(
-            "Nuevo Daily",
-            "¿Qué daily quieres registrar?");
-
-        if (string.IsNullOrWhiteSpace(title))
-        {
-            return;
-        }
+        var title = await Application.Current.MainPage.DisplayPromptAsync("Nuevo Daily", "¿Qué daily quieres registrar?");
+        if (string.IsNullOrWhiteSpace(title)) return;
 
         var newDaily = new DailyItem
         {
@@ -335,10 +291,7 @@ public partial class MainViewModel : ObservableObject
             ImagePath = _pendingImagePath
         };
 
-        // Guarda el nuevo daily en SQLite.
         await _databaseService.SaveDailyAsync(newDaily);
-
-        // Lo añade a la colección para refrescar la UI al instante.
         Dailies.Add(newDaily);
         _pendingImagePath = null;
     }
@@ -346,15 +299,8 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task AddNewTaskAsync()
     {
-        // Abre un cuadro nativo para pedir el título de la nueva tarea.
-        var title = await Application.Current.MainPage.DisplayPromptAsync(
-            "Nueva Tarea",
-            "¿Qué tarea quieres registrar?");
-
-        if (string.IsNullOrWhiteSpace(title))
-        {
-            return;
-        }
+        var title = await Application.Current.MainPage.DisplayPromptAsync("Nueva Tarea", "¿Qué tarea quieres registrar?");
+        if (string.IsNullOrWhiteSpace(title)) return;
 
         var newTask = new TaskItem
         {
@@ -365,10 +311,7 @@ public partial class MainViewModel : ObservableObject
             ImagePath = _pendingImagePath
         };
 
-        // Guarda la nueva tarea en SQLite.
         await _databaseService.SaveTaskAsync(newTask);
-
-        // La añade a la colección para refrescar la UI al instante.
         Tasks.Add(newTask);
         _pendingImagePath = null;
     }
@@ -376,25 +319,11 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task AddNewRewardAsync()
     {
-        // Pide el título de la nueva recompensa.
-        var title = await Application.Current.MainPage.DisplayPromptAsync(
-            "Nueva Recompensa",
-            "¿Qué recompensa quieres añadir?");
+        var title = await Application.Current.MainPage.DisplayPromptAsync("Nueva Recompensa", "¿Qué recompensa quieres añadir?");
+        if (string.IsNullOrWhiteSpace(title)) return;
 
-        if (string.IsNullOrWhiteSpace(title))
-        {
-            return;
-        }
-
-        // Pide el coste de la recompensa en monedas.
-        var costText = await Application.Current.MainPage.DisplayPromptAsync(
-            "Coste de Recompensa",
-            "¿Cuántas monedas cuesta?");
-
-        if (string.IsNullOrWhiteSpace(costText) || !int.TryParse(costText, out var cost) || cost < 0)
-        {
-            return;
-        }
+        var costText = await Application.Current.MainPage.DisplayPromptAsync("Coste de Recompensa", "¿Cuántas monedas cuesta?");
+        if (string.IsNullOrWhiteSpace(costText) || !int.TryParse(costText, out var cost) || cost < 0) return;
 
         var newReward = new RewardItem
         {
@@ -404,64 +333,80 @@ public partial class MainViewModel : ObservableObject
             ImagePath = _pendingImagePath
         };
 
-        // Guarda la recompensa y la añade a la lista visible.
         await _databaseService.SaveRewardAsync(newReward);
         Rewards.Add(newReward);
         _pendingImagePath = null;
     }
 
+    // ========================================================
+    // AQUI ESTÁN LOS 3 COMANDOS DE BORRADO ACTUALIZADOS (CON CARTEL DE CONFIRMACIÓN)
+    // ========================================================
+
     [RelayCommand]
     private async Task DeleteTaskAsync(TaskItem task)
     {
-        if (task is null)
-        {
-            return;
-        }
+        if (task is null) return;
 
-        await _databaseService.DeleteTaskAsync(task);
-        Tasks.Remove(task);
+        bool confirm = await Application.Current.MainPage.DisplayAlert(
+            "Eliminar Tarea",
+            "¿Estás seguro de que quieres borrar esta tarea?",
+            "Sí",
+            "No");
+
+        if (confirm)
+        {
+            await _databaseService.DeleteTaskAsync(task);
+            Tasks.Remove(task);
+        }
     }
 
     [RelayCommand]
     private async Task DeleteHabitAsync(HabitItem habit)
     {
-        if (habit is null)
-        {
-            return;
-        }
+        if (habit is null) return;
 
-        await _databaseService.DeleteHabitAsync(habit);
-        Habits.Remove(habit);
+        bool confirm = await Application.Current.MainPage.DisplayAlert(
+            "Eliminar Hábito",
+            "¿Estás seguro de que quieres borrar este hábito?",
+            "Sí",
+            "No");
+
+        if (confirm)
+        {
+            await _databaseService.DeleteHabitAsync(habit);
+            Habits.Remove(habit);
+        }
     }
 
     [RelayCommand]
     private async Task DeleteDailyAsync(DailyItem daily)
     {
-        if (daily is null)
-        {
-            return;
-        }
+        if (daily is null) return;
 
-        await _databaseService.DeleteDailyAsync(daily);
-        Dailies.Remove(daily);
+        bool confirm = await Application.Current.MainPage.DisplayAlert(
+            "Eliminar Diaria",
+            "¿Estás seguro de que quieres borrar esta tarea diaria?",
+            "Sí",
+            "No");
+
+        if (confirm)
+        {
+            await _databaseService.DeleteDailyAsync(daily);
+            Dailies.Remove(daily);
+        }
     }
+
+    // ========================================================
 
     [RelayCommand]
     private async Task CompleteTaskAsync(TaskItem task)
     {
-        if (task is null || task.IsCompleted)
-        {
-            return;
-        }
+        if (task is null || task.IsCompleted) return;
 
-        // Marca la tarea como completada y la guarda en base de datos.
         task.IsCompleted = true;
         await _databaseService.SaveTaskAsync(task);
 
-        // Suma experiencia por completar una tarea.
         await AddExperienceAsync(50, 10);
-
-        // Recarga las tareas para reflejar el estado actualizado.
         await LoadTasksAsync();
         await CheckAchievementsAsync();
     }
@@ -469,12 +414,8 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private Task StartTimerAsync()
     {
-        if (IsTimerRunning)
-        {
-            return Task.CompletedTask;
-        }
+        if (IsTimerRunning) return Task.CompletedTask;
 
-        // Arranca el temporizador de concentración.
         IsTimerRunning = true;
         _timer.Start();
         return Task.CompletedTask;
@@ -483,14 +424,9 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task StopTimerAsync()
     {
-        // Pausa el temporizador y pregunta si el usuario se rinde.
         _timer.Stop();
 
-        var surrender = await Application.Current.MainPage.DisplayAlert(
-            "Detener temporizador",
-            "¿Te rindes en esta misión?",
-            "Sí",
-            "No");
+        var surrender = await Application.Current.MainPage.DisplayAlert("Detener temporizador", "¿Te rindes en esta misión?", "Sí", "No");
 
         if (surrender)
         {
@@ -500,7 +436,6 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
-        // Si no se rinde, reanuda el temporizador.
         IsTimerRunning = true;
         _timer.Start();
     }
@@ -508,30 +443,20 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task ExecuteHabitAsync(HabitItem habit)
     {
-        if (habit is null)
-        {
-            return;
-        }
+        if (habit is null) return;
 
-        // Si es hábito positivo, suma XP y revisa subida de nivel.
         if (habit.IsPositive)
         {
             await AddExperienceAsync(10, 10);
         }
 
-        // Si es hábito negativo, resta salud.
         if (habit.IsNegative)
         {
             CurrentUserProfile.Health -= 10;
 
-            // Si no queda salud, aplica penalización tipo Game Over.
             if (CurrentUserProfile.Health <= 0)
             {
-                await Application.Current.MainPage.DisplayAlert(
-                    "¡Caíste en batalla!",
-                    "Has perdido toda tu salud. Pierdes 1 Nivel y 10 monedas.",
-                    "Resucitar");
-
+                await Application.Current.MainPage.DisplayAlert("¡Caíste en batalla!", "Has perdido toda tu salud. Pierdes 1 Nivel y 10 monedas.", "Resucitar");
                 CurrentUserProfile.Level = Math.Max(1, CurrentUserProfile.Level - 1);
                 CurrentUserProfile.Coins = Math.Max(0, CurrentUserProfile.Coins - 10);
                 CurrentUserProfile.CurrentXP = 0;
@@ -539,11 +464,9 @@ public partial class MainViewModel : ObservableObject
             }
         }
 
-        // Guarda el perfil tras los cambios de experiencia.
         await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
         OnPropertyChanged(nameof(CurrentUserProfile));
 
-        // Guarda el hábito en base de datos.
         await _databaseService.SaveHabitAsync(habit);
         await CheckAchievementsAsync();
     }
@@ -551,22 +474,14 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task CompleteDailyAsync(DailyItem daily)
     {
-        if (daily is null)
-        {
-            return;
-        }
+        if (daily is null) return;
 
-        // Marca el daily como completado hoy y actualiza la fecha.
         daily.IsCompletedToday = true;
         daily.LastCompletedDate = DateTime.Today;
 
-        // Suma XP por completar el daily y revisa subida de nivel.
         await AddExperienceAsync(20, 10);
-
-        // Guarda cambios en base de datos.
         await _databaseService.SaveDailyAsync(daily);
 
-        // Recarga dailies para reflejar el estado actualizado.
         await LoadDailiesAsync();
         await CheckAchievementsAsync();
     }
@@ -574,10 +489,7 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task BuyRewardAsync(RewardItem reward)
     {
-        if (reward is null)
-        {
-            return;
-        }
+        if (reward is null) return;
 
         if (CurrentUserProfile.Coins >= reward.Cost)
         {
@@ -585,16 +497,10 @@ public partial class MainViewModel : ObservableObject
             await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
             OnPropertyChanged(nameof(CurrentUserProfile));
 
-            await Application.Current.MainPage.DisplayAlert(
-                "Recompensas",
-                "¡Premio comprado! Disfruta de tu recompensa",
-                "OK");
+            await Application.Current.MainPage.DisplayAlert("Recompensas", "¡Premio comprado! Disfruta de tu recompensa", "OK");
             return;
         }
 
-        await Application.Current.MainPage.DisplayAlert(
-            "Recompensas",
-            "No tienes suficientes monedas",
-            "OK");
+        await Application.Current.MainPage.DisplayAlert("Recompensas", "No tienes suficientes monedas", "OK");
     }
 }

@@ -104,9 +104,15 @@
                     <CollectionView ItemsSource="{Binding Habits}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:HabitItem">
-                                <Grid ColumnDefinitions="*, Auto" BackgroundColor="#2D2D2D" Padding="15" Margin="0,0,0,10">
+                                <Grid ColumnDefinitions="*, Auto, Auto" BackgroundColor="#2D2D2D" Padding="15" Margin="0,0,0,10">
                                     <Label Text="{Binding Title}" VerticalOptions="Center" TextColor="White" FontSize="16" />
-                                    <Button Grid.Column="1" Text="EJECUTAR" BackgroundColor="#107C10" TextColor="White"
+
+                                    <Button Grid.Column="1" Text="🗑️" 
+                                            BackgroundColor="Transparent" TextColor="#E81123" FontSize="18"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DeleteHabitCommand}"
+                                            CommandParameter="{Binding .}" Margin="0,0,10,0" />
+
+                                    <Button Grid.Column="2" Text="EJECUTAR" BackgroundColor="#107C10" TextColor="White"
                                             CornerRadius="0" FontAttributes="Bold"
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=ExecuteHabitCommand}"
                                             CommandParameter="{Binding .}" />
@@ -127,9 +133,15 @@
                     <CollectionView ItemsSource="{Binding Dailies}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:DailyItem">
-                                <Grid ColumnDefinitions="*, Auto" BackgroundColor="#2D2D2D" Padding="15" Margin="0,0,0,10">
+                                <Grid ColumnDefinitions="*, Auto, Auto" BackgroundColor="#2D2D2D" Padding="15" Margin="0,0,0,10">
                                     <Label Text="{Binding Title}" VerticalOptions="Center" TextColor="White" FontSize="16" />
-                                    <Button Grid.Column="1" Text="COMPLETAR" BackgroundColor="#0078D7" TextColor="White"
+
+                                    <Button Grid.Column="1" Text="🗑️" 
+                                            BackgroundColor="Transparent" TextColor="#E81123" FontSize="18"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DeleteDailyCommand}"
+                                            CommandParameter="{Binding .}" Margin="0,0,10,0" />
+
+                                    <Button Grid.Column="2" Text="COMPLETAR" BackgroundColor="#0078D7" TextColor="White"
                                             CornerRadius="0" FontAttributes="Bold"
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=CompleteDailyCommand}"
                                             CommandParameter="{Binding .}" />
@@ -150,12 +162,18 @@
                     <CollectionView ItemsSource="{Binding Tasks}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:TaskItem">
-                                <Grid ColumnDefinitions="*, Auto" BackgroundColor="#2D2D2D" Padding="15" Margin="0,0,0,10">
+                                <Grid ColumnDefinitions="*, Auto, Auto" BackgroundColor="#2D2D2D" Padding="15" Margin="0,0,0,10">
                                     <VerticalStackLayout Grid.Column="0" VerticalOptions="Center">
                                         <Label Text="{Binding Title}" TextColor="White" FontSize="16" FontAttributes="Bold" />
                                         <Label Text="{Binding EstimatedMinutes, StringFormat='{0} min'}" TextColor="Gray" FontSize="12" />
                                     </VerticalStackLayout>
-                                    <Button Grid.Column="1" Text="TERMINAR" BackgroundColor="#B4009E" TextColor="White"
+
+                                    <Button Grid.Column="1" Text="🗑️" 
+                                            BackgroundColor="Transparent" TextColor="#E81123" FontSize="18"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DeleteTaskCommand}"
+                                            CommandParameter="{Binding .}" Margin="0,0,10,0" />
+
+                                    <Button Grid.Column="2" Text="TERMINAR" BackgroundColor="#B4009E" TextColor="White"
                                             CornerRadius="0" FontAttributes="Bold"
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=CompleteTaskCommand}"
                                             CommandParameter="{Binding .}" />
