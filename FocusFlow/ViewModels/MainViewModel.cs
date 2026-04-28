@@ -6,12 +6,14 @@ using FocusFlow.Services;
 using Plugin.LocalNotification;
 using Plugin.LocalNotification.Core.Models;
 using Plugin.LocalNotification.AndroidOption;
+using System.Globalization;
 
 namespace FocusFlow.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {
     private readonly DatabaseService _databaseService;
+    private readonly SoundService _soundService;
     private bool _isInitialized;
     private IDispatcherTimer _timer;
     private int _currentUserId = 1;
@@ -25,10 +27,6 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<HabitItem> habits = new();
 
-    // Lista observable de dailies.
-    [ObservableProperty]
-    private ObservableCollection<DailyItem> dailies = new();
-
     // Lista observable de recompensas.
     [ObservableProperty]
     private ObservableCollection<RewardItem> rewards = new();
@@ -37,51 +35,15 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private UserProfile currentUserProfile = new() { Id = 1, Level = 1, CurrentXP = 0, Coins = 0, Health = 50, MaxHealth = 50 };
 
-    // Indica si el temporizador está en marcha.
-    [ObservableProperty]
-    private bool isTimerRunning = false;
-
-    // Texto del temporizador en formato MM:ss.
-    [ObservableProperty]
-    private string timerDisplay = "25:00";
-
-    // Segundos restantes del temporizador.
-    [ObservableProperty]
-    private int timeRemainingSeconds = 1500;
-
-    public MainViewModel(DatabaseService databaseService)
+    public MainViewModel(DatabaseService databaseService, SoundService soundService)
     {
         _databaseService = databaseService;
+        _soundService = soundService;
 
-        // Inicializa el temporizador de concentración.
+        // Timer interno para revisar vencimientos cada minuto.
         _timer = Application.Current.Dispatcher.CreateTimer();
-        _timer.Interval = TimeSpan.FromSeconds(1);
-        _timer.Tick += Timer_Tick;
-    }
-
-    private async void Timer_Tick(object sender, EventArgs e)
-    {
-        TimeRemainingSeconds--;
-
-        var minutes = TimeRemainingSeconds / 60;
-        var seconds = TimeRemainingSeconds % 60;
-        TimerDisplay = $"{minutes:00}:{seconds:00}";
-
-        if (TimeRemainingSeconds <= 0)
-        {
-            _timer.Stop();
-            IsTimerRunning = false;
-            TimeRemainingSeconds = 0;
-            TimerDisplay = "00:00";
-
-            await Application.Current.MainPage.DisplayAlert(
-                "Temporizador",
-                "¡Misión Completada! Has ganado 50 XP",
-                "OK");
-
-            await AddExperienceAsync(50, 10);
-            await CheckAchievementsAsync();
-        }
+        _timer.Interval = TimeSpan.FromMinutes(1);
+        _timer.Tick += async (_, _) => await CheckMissionDeadlinesAsync();
     }
 
     public async Task InitializeAsync()
@@ -91,54 +53,59 @@ public partial class MainViewModel : ObservableObject
             return;
         }
 
+        // Carga el último usuario activo desde sesión local.
+        var session = await _databaseService.GetUserSessionAsync();
+        _currentUserId = session.CurrentUserId;
+
+        // Si no hay sesión válida, salimos para evitar cargar datos sin login.
+        if (_currentUserId == 0)
+        {
+            return;
+        }
+
         // Carga inicial de datos cuando el ViewModel está listo para usarse.
-        CurrentUserProfile = await _databaseService.GetUserProfileAsync();
+        CurrentUserProfile = await _databaseService.GetUserProfileAsync(_currentUserId);
         await LoadTasksAsync();
         await LoadHabitsAsync();
-        await LoadDailiesAsync();
 
-        // Aplica penalización diaria si pasó al menos un día desde el último acceso.
-        if (CurrentUserProfile.LastLoginDate.Date < DateTime.Today)
-        {
-            var misionesFalladas = Dailies.Count(d => !d.IsCompletedToday);
-            int damage = misionesFalladas * 10;
-
-            if (damage > 0)
-            {
-                CurrentUserProfile.Health -= damage;
-
-                // Si no queda salud, aplica la lógica de Game Over.
-                if (CurrentUserProfile.Health <= 0)
-                {
-                    await Application.Current.MainPage.DisplayAlert(
-                        "¡Caíste en batalla!",
-                        "Has perdido toda tu salud. Pierdes 1 Nivel y 10 monedas.",
-                        "Resucitar");
-
-                    CurrentUserProfile.Level = Math.Max(1, CurrentUserProfile.Level - 1);
-                    CurrentUserProfile.Coins = Math.Max(0, CurrentUserProfile.Coins - 10);
-                    CurrentUserProfile.CurrentXP = 0;
-                    CurrentUserProfile.Health = CurrentUserProfile.MaxHealth;
-                }
-            }
-
-            // Reinicia todos los dailies para el nuevo día y los guarda.
-            foreach (var daily in Dailies)
-            {
-                daily.IsCompletedToday = false;
-                await _databaseService.SaveDailyAsync(daily);
-            }
-
-            // Guarda la nueva fecha de acceso y el perfil actualizado.
-            CurrentUserProfile.LastLoginDate = DateTime.Today;
-            await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
-            OnPropertyChanged(nameof(CurrentUserProfile));
-            await LoadDailiesAsync();
-        }
+        // Guarda la nueva fecha de acceso del usuario.
+        CurrentUserProfile.LastLoginDate = DateTime.Today;
+        await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+        OnPropertyChanged(nameof(CurrentUserProfile));
 
         await LoadRewardsAsync();
         await ScheduleDailyReminderAsync();
+        _timer.Start();
         _isInitialized = true;
+    }
+
+    private async Task ApplyGameOverAsync()
+    {
+        await Application.Current.MainPage.DisplayAlert(
+            "¡Caíste en batalla!",
+            "Has perdido toda tu salud. Pierdes 1 Nivel y 50 monedas.",
+            "Resucitar");
+
+        CurrentUserProfile.Level = Math.Max(0, CurrentUserProfile.Level - 1);
+        CurrentUserProfile.Coins = Math.Max(0, CurrentUserProfile.Coins - 50);
+        CurrentUserProfile.CurrentXP = 0;
+        CurrentUserProfile.Health = CurrentUserProfile.MaxHealth;
+
+        await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+        OnPropertyChanged(nameof(CurrentUserProfile));
+    }
+
+    private async Task NotifyMissionFailedAsync(string missionTitle)
+    {
+        var request = new NotificationRequest
+        {
+            NotificationId = 3000 + Random.Shared.Next(1, 999),
+            Title = "Misión fallida",
+            Description = $"Misión fallida. No has completado {missionTitle}",
+            Schedule = new NotificationRequestSchedule { NotifyTime = DateTime.Now.AddSeconds(1) }
+        };
+
+        await LocalNotificationCenter.Current.Show(request);
     }
 
     private async Task ScheduleDailyReminderAsync()
@@ -155,10 +122,125 @@ public partial class MainViewModel : ObservableObject
             NotificationId = 100,
             Title = "¡Despierta, Héroe!",
             Description = "Tus misiones diarias te esperan. ¡No pierdas tu racha y evita recibir daño!",
-            Schedule = new NotificationRequestSchedule { NotifyTime = DateTime.Now.AddSeconds(10) }
+            Schedule = new NotificationRequestSchedule
+            {
+                NotifyTime = DateTime.Today.AddDays(1).AddHours(9),
+                RepeatType = NotificationRepeat.Daily
+            }
         };
 
         await LocalNotificationCenter.Current.Show(request);
+
+        // Programa recordatorios de 30 minutos para tareas y hábitos activos.
+        await ScheduleUpcomingMissionNotificationsAsync();
+    }
+
+    private async Task ScheduleUpcomingMissionNotificationsAsync()
+    {
+        var now = DateTime.Now;
+
+        foreach (var task in Tasks.Where(t => !t.IsCompleted && !t.IsFailed))
+        {
+            var notifyTime = task.DueDateTime.AddMinutes(-30);
+            if (notifyTime <= now)
+            {
+                continue;
+            }
+
+            var taskRequest = new NotificationRequest
+            {
+                NotificationId = 1000 + task.Id,
+                Title = "Aviso de misión",
+                Description = $"Solo queda media hora para completar {task.Title} ¿Lo acabaste o estás con ello?",
+                Schedule = new NotificationRequestSchedule { NotifyTime = notifyTime }
+            };
+
+            await LocalNotificationCenter.Current.Show(taskRequest);
+        }
+
+        foreach (var habit in Habits)
+        {
+            if (string.IsNullOrWhiteSpace(habit.ActiveDaysCsv))
+            {
+                continue;
+            }
+
+            var today = DateTime.Today;
+            var todayCode = ((int)today.DayOfWeek).ToString(CultureInfo.InvariantCulture);
+            var activeDays = habit.ActiveDaysCsv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (!activeDays.Contains(todayCode))
+            {
+                continue;
+            }
+
+            var habitDateTime = today.Add(habit.ScheduledTime);
+            var notifyTime = habitDateTime.AddMinutes(-30);
+            if (notifyTime <= now)
+            {
+                continue;
+            }
+
+            var habitRequest = new NotificationRequest
+            {
+                NotificationId = 2000 + habit.Id,
+                Title = "Aviso de misión",
+                Description = $"Solo queda media hora para completar {habit.Title} ¿Lo acabaste o estás con ello?",
+                Schedule = new NotificationRequestSchedule { NotifyTime = notifyTime }
+            };
+
+            await LocalNotificationCenter.Current.Show(habitRequest);
+        }
+    }
+
+    private async Task CheckMissionDeadlinesAsync()
+    {
+        var now = DateTime.Now;
+
+        foreach (var task in Tasks.Where(t => !t.IsCompleted && !t.IsFailed && t.DueDateTime <= now).ToList())
+        {
+            task.IsFailed = true;
+            await _databaseService.SaveTaskAsync(task);
+
+            CurrentUserProfile.Health -= 10;
+            await _soundService.PlayFailAsync();
+            await NotifyMissionFailedAsync(task.Title);
+            await Application.Current.MainPage.DisplayAlert("Misión fallida", $"Misión fallida. No has completado {task.Title}", "OK");
+            await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+        }
+
+        foreach (var habit in Habits)
+        {
+            var today = DateTime.Today;
+            var todayCode = ((int)today.DayOfWeek).ToString(CultureInfo.InvariantCulture);
+            var activeDays = (habit.ActiveDaysCsv ?? string.Empty)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            if (!activeDays.Contains(todayCode))
+            {
+                continue;
+            }
+
+            var habitDeadline = today.Add(habit.ScheduledTime);
+            var alreadyCompletedToday = habit.LastCompletedDate.Date == today;
+            var alreadyPenalizedToday = habit.LastPenaltyDate.Date == today;
+
+            if (!alreadyCompletedToday && !alreadyPenalizedToday && habitDeadline <= now)
+            {
+                CurrentUserProfile.Health -= 5;
+                habit.LastPenaltyDate = today;
+                await _databaseService.SaveHabitAsync(habit);
+
+                await _soundService.PlayFailAsync();
+                await NotifyMissionFailedAsync(habit.Title);
+                await Application.Current.MainPage.DisplayAlert("Misión fallida", $"Misión fallida. No has completado {habit.Title}", "OK");
+                await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+            }
+        }
+
+        if (CurrentUserProfile.Health <= 0)
+        {
+            await ApplyGameOverAsync();
+        }
     }
 
     public async Task LoadTasksAsync()
@@ -173,12 +255,6 @@ public partial class MainViewModel : ObservableObject
         Habits = new ObservableCollection<HabitItem>(habitList);
     }
 
-    public async Task LoadDailiesAsync()
-    {
-        var dailyList = await _databaseService.GetDailiesAsync(_currentUserId);
-        Dailies = new ObservableCollection<DailyItem>(dailyList);
-    }
-
     public async Task LoadRewardsAsync()
     {
         var rewardList = await _databaseService.GetRewardsAsync(_currentUserId);
@@ -190,14 +266,19 @@ public partial class MainViewModel : ObservableObject
         CurrentUserProfile.CurrentXP += amount;
         CurrentUserProfile.Coins += coinsToAdd;
 
-        while (CurrentUserProfile.CurrentXP >= 100)
+        while (CurrentUserProfile.CurrentXP >= GetXpNeededForLevel(CurrentUserProfile.Level))
         {
+            CurrentUserProfile.CurrentXP -= GetXpNeededForLevel(CurrentUserProfile.Level);
             CurrentUserProfile.Level++;
-            CurrentUserProfile.CurrentXP -= 100;
         }
 
         await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
         OnPropertyChanged(nameof(CurrentUserProfile));
+    }
+
+    private static int GetXpNeededForLevel(int level)
+    {
+        return 50 + (level * 5);
     }
 
     private async Task CheckAchievementsAsync()
@@ -230,7 +311,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         var firstSteps = achievements.FirstOrDefault(a => a.Title == "Primeros Pasos");
-        var hasProgress = CurrentUserProfile.CurrentXP > 0 || Tasks.Any(t => t.IsCompleted) || Dailies.Any(d => d.IsCompletedToday);
+        var hasProgress = CurrentUserProfile.CurrentXP > 0 || Tasks.Any(t => t.IsCompleted) || Habits.Any(h => h.LastCompletedDate.Date == DateTime.Today);
         if (firstSteps is not null && !firstSteps.IsUnlocked && hasProgress)
         {
             firstSteps.IsUnlocked = true;
@@ -258,13 +339,56 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task AddNewHabitAsync()
     {
-        var title = await Application.Current.MainPage.DisplayPromptAsync("Nuevo Hábito", "¿Qué hábito quieres registrar?");
+        await _soundService.PlayClickAsync();
+
+        var title = await Application.Current.MainPage.DisplayPromptAsync("Nuevo Hábito", "Nombre del hábito:");
         if (string.IsNullOrWhiteSpace(title)) return;
+
+        var rewardText = await Application.Current.MainPage.DisplayPromptAsync("Recompensa", "¿Cuántas monedas da este hábito?");
+        if (string.IsNullOrWhiteSpace(rewardText) || !int.TryParse(rewardText, out var rewardCoins) || rewardCoins < 0)
+        {
+            await Application.Current.MainPage.DisplayAlert("Hábito", "Las monedas no son válidas.", "OK");
+            return;
+        }
+
+        var timeText = await Application.Current.MainPage.DisplayPromptAsync("Hora", "Hora del hábito (HH:mm):");
+        if (string.IsNullOrWhiteSpace(timeText) ||
+            !TimeSpan.TryParseExact(timeText, "hh\\:mm", CultureInfo.InvariantCulture, out var scheduledTime))
+        {
+            await Application.Current.MainPage.DisplayAlert("Hábito", "La hora no tiene formato HH:mm.", "OK");
+            return;
+        }
+
+        var daysText = await Application.Current.MainPage.DisplayPromptAsync(
+            "Días activos",
+            "Escribe días por número (0=Dom .. 6=Sáb), separados por coma. Ej: 1,3,5");
+
+        if (string.IsNullOrWhiteSpace(daysText))
+        {
+            await Application.Current.MainPage.DisplayAlert("Hábito", "Debes indicar al menos un día activo.", "OK");
+            return;
+        }
+
+        var dayTokens = daysText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(x => int.TryParse(x, out var day) && day >= 0 && day <= 6)
+            .Distinct()
+            .ToArray();
+
+        if (dayTokens.Length == 0)
+        {
+            await Application.Current.MainPage.DisplayAlert("Hábito", "No hay días válidos (usa valores de 0 a 6).", "OK");
+            return;
+        }
 
         var newHabit = new HabitItem
         {
             UserId = _currentUserId,
             Title = title.Trim(),
+            ScheduledTime = scheduledTime,
+            ActiveDaysCsv = string.Join(',', dayTokens),
+            RewardCoins = rewardCoins,
+            LastCompletedDate = DateTime.MinValue,
+            LastPenaltyDate = DateTime.MinValue,
             IsPositive = true,
             IsNegative = false,
             ImagePath = _pendingImagePath
@@ -272,53 +396,80 @@ public partial class MainViewModel : ObservableObject
 
         await _databaseService.SaveHabitAsync(newHabit);
         Habits.Add(newHabit);
-        _pendingImagePath = null;
-    }
-
-    [RelayCommand]
-    private async Task AddNewDailyAsync()
-    {
-        var title = await Application.Current.MainPage.DisplayPromptAsync("Nuevo Daily", "¿Qué daily quieres registrar?");
-        if (string.IsNullOrWhiteSpace(title)) return;
-
-        var newDaily = new DailyItem
-        {
-            UserId = _currentUserId,
-            Title = title.Trim(),
-            IsCompletedToday = false,
-            LastCompletedDate = DateTime.MinValue,
-            Streak = 0,
-            ImagePath = _pendingImagePath
-        };
-
-        await _databaseService.SaveDailyAsync(newDaily);
-        Dailies.Add(newDaily);
+        await _soundService.PlaySuccessAsync();
         _pendingImagePath = null;
     }
 
     [RelayCommand]
     private async Task AddNewTaskAsync()
     {
-        var title = await Application.Current.MainPage.DisplayPromptAsync("Nueva Tarea", "¿Qué tarea quieres registrar?");
+        await _soundService.PlayClickAsync();
+
+        var title = await Application.Current.MainPage.DisplayPromptAsync("Nueva Tarea", "Nombre de la tarea:");
         if (string.IsNullOrWhiteSpace(title)) return;
+
+        var minutesText = await Application.Current.MainPage.DisplayPromptAsync("Duración", "Minutos estimados (ej: 25):", initialValue: "25");
+        if (string.IsNullOrWhiteSpace(minutesText) || !int.TryParse(minutesText, out var estimatedMinutes) || estimatedMinutes <= 0)
+        {
+            await Application.Current.MainPage.DisplayAlert("Tarea", "Los minutos estimados no son válidos.", "OK");
+            return;
+        }
+
+        var rewardText = await Application.Current.MainPage.DisplayPromptAsync("Recompensa", "¿Cuántas monedas da esta tarea?", initialValue: "10");
+        if (string.IsNullOrWhiteSpace(rewardText) || !int.TryParse(rewardText, out var rewardCoins) || rewardCoins < 0)
+        {
+            await Application.Current.MainPage.DisplayAlert("Tarea", "Las monedas no son válidas.", "OK");
+            return;
+        }
+
+        var dateText = await Application.Current.MainPage.DisplayPromptAsync("Fecha límite", "Fecha de vencimiento (yyyy-MM-dd):", initialValue: DateTime.Today.ToString("yyyy-MM-dd"));
+        var timeText = await Application.Current.MainPage.DisplayPromptAsync("Hora límite", "Hora de vencimiento (HH:mm):", initialValue: DateTime.Now.AddHours(1).ToString("HH:mm"));
+
+        if (string.IsNullOrWhiteSpace(dateText) || string.IsNullOrWhiteSpace(timeText) ||
+            !DateTime.TryParseExact(dateText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dueDate) ||
+            !TimeSpan.TryParseExact(timeText, "hh\\:mm", CultureInfo.InvariantCulture, out var dueTime))
+        {
+            await Application.Current.MainPage.DisplayAlert("Tarea", "Fecha u hora no válidas. Usa yyyy-MM-dd y HH:mm.", "OK");
+            return;
+        }
+
+        var dueDateTime = dueDate.Date.Add(dueTime);
 
         var newTask = new TaskItem
         {
             UserId = _currentUserId,
             Title = title.Trim(),
-            EstimatedMinutes = 25,
+            EstimatedMinutes = estimatedMinutes,
+            DueDateTime = dueDateTime,
+            RewardCoins = rewardCoins,
             IsCompleted = false,
+            IsFailed = false,
             ImagePath = _pendingImagePath
         };
 
         await _databaseService.SaveTaskAsync(newTask);
         Tasks.Add(newTask);
+        await _soundService.PlaySuccessAsync();
         _pendingImagePath = null;
     }
 
     [RelayCommand]
     private async Task AddNewRewardAsync()
     {
+        await _soundService.PlayClickAsync();
+
+        var maxCustomRewards = 15 + (CurrentUserProfile.Level * 5);
+        var currentCustomRewards = Rewards.Count(r => !r.IsSystemReward);
+
+        if (currentCustomRewards >= maxCustomRewards)
+        {
+            await Application.Current.MainPage.DisplayAlert(
+                "Recompensas",
+                $"Has alcanzado el límite de recompensas custom ({maxCustomRewards}).",
+                "OK");
+            return;
+        }
+
         var title = await Application.Current.MainPage.DisplayPromptAsync("Nueva Recompensa", "¿Qué recompensa quieres añadir?");
         if (string.IsNullOrWhiteSpace(title)) return;
 
@@ -330,11 +481,14 @@ public partial class MainViewModel : ObservableObject
             UserId = _currentUserId,
             Title = title.Trim(),
             Cost = cost,
-            ImagePath = _pendingImagePath
+            ImagePath = _pendingImagePath,
+            IsSystemReward = false,
+            HealthRestore = 0
         };
 
         await _databaseService.SaveRewardAsync(newReward);
         Rewards.Add(newReward);
+        await _soundService.PlaySuccessAsync();
         _pendingImagePath = null;
     }
 
@@ -357,6 +511,7 @@ public partial class MainViewModel : ObservableObject
         {
             await _databaseService.DeleteTaskAsync(task);
             Tasks.Remove(task);
+            await _soundService.PlayClickAsync();
         }
     }
 
@@ -375,69 +530,44 @@ public partial class MainViewModel : ObservableObject
         {
             await _databaseService.DeleteHabitAsync(habit);
             Habits.Remove(habit);
+            await _soundService.PlayClickAsync();
         }
     }
-
-    [RelayCommand]
-    private async Task DeleteDailyAsync(DailyItem daily)
-    {
-        if (daily is null) return;
-
-        bool confirm = await Application.Current.MainPage.DisplayAlert(
-            "Eliminar Diaria",
-            "¿Estás seguro de que quieres borrar esta tarea diaria?",
-            "Sí",
-            "No");
-
-        if (confirm)
-        {
-            await _databaseService.DeleteDailyAsync(daily);
-            Dailies.Remove(daily);
-        }
-    }
-
-    // ========================================================
 
     [RelayCommand]
     private async Task CompleteTaskAsync(TaskItem task)
     {
         if (task is null || task.IsCompleted) return;
 
-        task.IsCompleted = true;
-        await _databaseService.SaveTaskAsync(task);
-
-        await AddExperienceAsync(50, 10);
-        await LoadTasksAsync();
-        await CheckAchievementsAsync();
-    }
-
-    [RelayCommand]
-    private Task StartTimerAsync()
-    {
-        if (IsTimerRunning) return Task.CompletedTask;
-
-        IsTimerRunning = true;
-        _timer.Start();
-        return Task.CompletedTask;
-    }
-
-    [RelayCommand]
-    private async Task StopTimerAsync()
-    {
-        _timer.Stop();
-
-        var surrender = await Application.Current.MainPage.DisplayAlert("Detener temporizador", "¿Te rindes en esta misión?", "Sí", "No");
-
-        if (surrender)
+        if (task.DueDateTime <= DateTime.Now)
         {
-            TimeRemainingSeconds = 1500;
-            TimerDisplay = "25:00";
-            IsTimerRunning = false;
+            task.IsFailed = true;
+            await _databaseService.SaveTaskAsync(task);
+
+            CurrentUserProfile.Health -= 10;
+            await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+            OnPropertyChanged(nameof(CurrentUserProfile));
+
+            await NotifyMissionFailedAsync(task.Title);
+            await Application.Current.MainPage.DisplayAlert("Misión fallida", $"Misión fallida. No has completado {task.Title}", "OK");
+
+            if (CurrentUserProfile.Health <= 0)
+            {
+                await ApplyGameOverAsync();
+            }
+
+            await LoadTasksAsync();
             return;
         }
 
-        IsTimerRunning = true;
-        _timer.Start();
+        task.IsCompleted = true;
+        task.CompletedAt = DateTime.Now;
+        await _databaseService.SaveTaskAsync(task);
+
+        await AddExperienceAsync(10, task.RewardCoins);
+        await LoadTasksAsync();
+        await _soundService.PlaySuccessAsync();
+        await CheckAchievementsAsync();
     }
 
     [RelayCommand]
@@ -445,22 +575,56 @@ public partial class MainViewModel : ObservableObject
     {
         if (habit is null) return;
 
+        var today = DateTime.Today;
+        var todayCode = ((int)today.DayOfWeek).ToString(CultureInfo.InvariantCulture);
+        var activeDays = (habit.ActiveDaysCsv ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (!activeDays.Contains(todayCode))
+        {
+            await Application.Current.MainPage.DisplayAlert("Hábito", "Este hábito no toca hoy.", "OK");
+            return;
+        }
+
+        if (habit.LastCompletedDate.Date == today)
+        {
+            await Application.Current.MainPage.DisplayAlert("Hábito", "Este hábito ya está completado hoy.", "OK");
+            return;
+        }
+
+        var habitDeadline = today.Add(habit.ScheduledTime);
+        if (DateTime.Now > habitDeadline)
+        {
+            CurrentUserProfile.Health -= 5;
+            habit.LastPenaltyDate = today;
+            await _databaseService.SaveHabitAsync(habit);
+            await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+            OnPropertyChanged(nameof(CurrentUserProfile));
+
+            await NotifyMissionFailedAsync(habit.Title);
+            await Application.Current.MainPage.DisplayAlert("Misión fallida", $"Misión fallida. No has completado {habit.Title}", "OK");
+
+            if (CurrentUserProfile.Health <= 0)
+            {
+                await ApplyGameOverAsync();
+            }
+
+            return;
+        }
+
         if (habit.IsPositive)
         {
-            await AddExperienceAsync(10, 10);
+            await AddExperienceAsync(5, habit.RewardCoins);
+            habit.LastCompletedDate = today;
         }
 
         if (habit.IsNegative)
         {
-            CurrentUserProfile.Health -= 10;
+            CurrentUserProfile.Health -= 5;
 
             if (CurrentUserProfile.Health <= 0)
             {
-                await Application.Current.MainPage.DisplayAlert("¡Caíste en batalla!", "Has perdido toda tu salud. Pierdes 1 Nivel y 10 monedas.", "Resucitar");
-                CurrentUserProfile.Level = Math.Max(1, CurrentUserProfile.Level - 1);
-                CurrentUserProfile.Coins = Math.Max(0, CurrentUserProfile.Coins - 10);
-                CurrentUserProfile.CurrentXP = 0;
-                CurrentUserProfile.Health = CurrentUserProfile.MaxHealth;
+                await ApplyGameOverAsync();
             }
         }
 
@@ -468,21 +632,7 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(CurrentUserProfile));
 
         await _databaseService.SaveHabitAsync(habit);
-        await CheckAchievementsAsync();
-    }
-
-    [RelayCommand]
-    private async Task CompleteDailyAsync(DailyItem daily)
-    {
-        if (daily is null) return;
-
-        daily.IsCompletedToday = true;
-        daily.LastCompletedDate = DateTime.Today;
-
-        await AddExperienceAsync(20, 10);
-        await _databaseService.SaveDailyAsync(daily);
-
-        await LoadDailiesAsync();
+        await _soundService.PlaySuccessAsync();
         await CheckAchievementsAsync();
     }
 
@@ -491,16 +641,26 @@ public partial class MainViewModel : ObservableObject
     {
         if (reward is null) return;
 
+        await _soundService.PlayClickAsync();
+
         if (CurrentUserProfile.Coins >= reward.Cost)
         {
             CurrentUserProfile.Coins -= reward.Cost;
+
+            if (reward.HealthRestore > 0)
+            {
+                CurrentUserProfile.Health = Math.Min(CurrentUserProfile.MaxHealth, CurrentUserProfile.Health + reward.HealthRestore);
+            }
+
             await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
             OnPropertyChanged(nameof(CurrentUserProfile));
 
+            await _soundService.PlaySuccessAsync();
             await Application.Current.MainPage.DisplayAlert("Recompensas", "¡Premio comprado! Disfruta de tu recompensa", "OK");
             return;
         }
 
+        await _soundService.PlayFailAsync();
         await Application.Current.MainPage.DisplayAlert("Recompensas", "No tienes suficientes monedas", "OK");
     }
 }

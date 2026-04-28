@@ -3,6 +3,50 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
+    <!-- Estilos Aero Moderno -->
+    <Style x:Key="AeroSectionTitle" TargetType="Label">
+        <Setter Property="TextColor" Value="{StaticResource AeroSky}" />
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style x:Key="AeroCard" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource AeroPanel}" />
+        <Setter Property="Stroke" Value="{StaticResource AeroSky}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 14" />
+    </Style>
+
+    <Style x:Key="AeroGlassCard" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource AeroPanelLight}" />
+        <Setter Property="Stroke" Value="{StaticResource AeroSky}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 16" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="{StaticResource AeroSky}" Opacity="0.25" Radius="18" Offset="0,6" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="AeroActionButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{StaticResource AeroSkyDeep}" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CornerRadius" Value="12" />
+    </Style>
+
+    <Style x:Key="AeroStatLabel" TargetType="Label">
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontAttributes" Value="Bold" />
+    </Style>
+
+    <Style x:Key="AeroSubtleText" TargetType="Label">
+        <Setter Property="TextColor" Value="{StaticResource Gray300}" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+
     <Style TargetType="ActivityIndicator">
         <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
     </Style>
@@ -429,6 +473,62 @@
         <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource Magenta}, Dark={StaticResource White}}" />
         <Setter Property="UnselectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
         <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
+    </Style>
+
+    <!-- Estilos de la app (Frutiger Aero moderno) -->
+    <Style x:Key="AeroSectionTitle" TargetType="Label">
+        <Setter Property="TextColor" Value="{StaticResource AeroText}" />
+        <Setter Property="FontSize" Value="28" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CharacterSpacing" Value="1" />
+    </Style>
+
+    <Style x:Key="AeroSubtitle" TargetType="Label">
+        <Setter Property="TextColor" Value="{StaticResource AeroSubText}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="CharacterSpacing" Value="1" />
+    </Style>
+
+    <Style x:Key="AeroCard" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource AeroPanel}" />
+        <Setter Property="Stroke" Value="{StaticResource AeroGlow}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 18" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="{StaticResource AeroGlow}" Opacity="0.25" Radius="18" Offset="0,6" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="AeroCardSoft" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource AeroPanelSoft}" />
+        <Setter Property="Stroke" Value="{StaticResource AeroGlow}" />
+        <Setter Property="StrokeThickness" Value="0.5" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 16" />
+    </Style>
+
+    <Style x:Key="AeroActionButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{StaticResource AeroSkyDeep}" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Padding" Value="16,10" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="{StaticResource AeroGlow}" Opacity="0.3" Radius="14" Offset="0,4" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="AeroGhostButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{StaticResource AeroText}" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="BorderColor" Value="{StaticResource AeroGlow}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="Padding" Value="12,8" />
     </Style>
 
 </ResourceDictionary>

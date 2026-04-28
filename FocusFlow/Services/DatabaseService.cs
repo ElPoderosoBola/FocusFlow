@@ -23,11 +23,15 @@ public class DatabaseService
         await _database.CreateTableAsync<AchievementItem>();
         await _database.CreateTableAsync<UserProfile>();
         await _database.CreateTableAsync<User>();
+        await _database.CreateTableAsync<UserSession>();
 
         // Inserta logros por defecto si la tabla está vacía.
         await SeedAchievementsAsync();
 
-        // Inserta datos de ejemplo solo si no hay tareas guardadas.
+        // Asegura recompensa fija de salud para todos los usuarios.
+        await EnsureHealthRewardAsync();
+
+        // Inserta datos de ejemplo solo si hay usuario activo y no hay tareas.
         await SeedDataAsync();
     }
 
@@ -48,11 +52,17 @@ public class DatabaseService
             return;
         }
 
+        var defaultUser = await _database.Table<User>().FirstOrDefaultAsync();
+        if (defaultUser is null)
+        {
+            return;
+        }
+
         var sampleTasks = new List<TaskItem>
         {
-            new TaskItem { Title = "Misión de Tutorial", EstimatedMinutes = 20, IsCompleted = false },
-            new TaskItem { Title = "Repasar C#", EstimatedMinutes = 45, IsCompleted = false },
-            new TaskItem { Title = "Configurar UI Metro", EstimatedMinutes = 60, IsCompleted = false }
+            new TaskItem { UserId = defaultUser.Id, Title = "Misión de Tutorial", EstimatedMinutes = 20, DueDateTime = DateTime.Now.AddHours(4), RewardCoins = 10, IsCompleted = false, IsFailed = false, ImagePath = string.Empty },
+            new TaskItem { UserId = defaultUser.Id, Title = "Repasar C#", EstimatedMinutes = 45, DueDateTime = DateTime.Now.AddHours(8), RewardCoins = 15, IsCompleted = false, IsFailed = false, ImagePath = string.Empty },
+            new TaskItem { UserId = defaultUser.Id, Title = "Configurar UI Metro", EstimatedMinutes = 60, DueDateTime = DateTime.Now.AddDays(1), RewardCoins = 20, IsCompleted = false, IsFailed = false, ImagePath = string.Empty }
         };
 
         await _database.InsertAllAsync(sampleTasks);
@@ -193,6 +203,19 @@ public class DatabaseService
         }
 
         await _database.InsertAsync(user);
+
+        var profile = new UserProfile
+        {
+            UserId = user.Id,
+            Level = 1,
+            CurrentXP = 0,
+            Coins = 0,
+            Health = 50,
+            MaxHealth = 50,
+            LastLoginDate = DateTime.Today
+        };
+
+        await _database.InsertAsync(profile);
         return true;
     }
 
@@ -202,6 +225,34 @@ public class DatabaseService
         return await _database!.Table<User>()
             .Where(u => u.Username == username && u.Password == password)
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<UserSession> GetUserSessionAsync()
+    {
+        await InitAsync();
+
+        var session = await _database!.Table<UserSession>().FirstOrDefaultAsync();
+        if (session is not null)
+        {
+            return session;
+        }
+
+        var firstUser = await _database.Table<User>().FirstOrDefaultAsync();
+        var newSession = new UserSession
+        {
+            Id = 1,
+            CurrentUserId = 0,
+            LastAccessDate = DateTime.Today
+        };
+
+        await _database.InsertAsync(newSession);
+        return newSession;
+    }
+
+    public async Task<int> SaveUserSessionAsync(UserSession session)
+    {
+        await InitAsync();
+        return await _database!.InsertOrReplaceAsync(session);
     }
 
     public async Task<int> SaveRewardAsync(RewardItem item)
@@ -219,7 +270,43 @@ public class DatabaseService
     public async Task<int> DeleteRewardAsync(RewardItem item)
     {
         await InitAsync();
+
+        if (item.IsSystemReward)
+        {
+            return 0;
+        }
+
         return await _database!.DeleteAsync(item);
+    }
+
+    public async Task EnsureHealthRewardAsync()
+    {
+        await InitAsync();
+
+        var users = await _database!.Table<User>().ToListAsync();
+        foreach (var user in users)
+        {
+            var hasHealthReward = await _database.Table<RewardItem>()
+                .Where(r => r.UserId == user.Id && r.IsSystemReward)
+                .FirstOrDefaultAsync();
+
+            if (hasHealthReward is not null)
+            {
+                continue;
+            }
+
+            var healthReward = new RewardItem
+            {
+                UserId = user.Id,
+                Title = "Curación de Salud",
+                Cost = 25,
+                ImagePath = string.Empty,
+                IsSystemReward = true,
+                HealthRestore = 10
+            };
+
+            await _database.InsertAsync(healthReward);
+        }
     }
 
     // Inserta logros iniciales si aún no hay ninguno.
@@ -276,11 +363,13 @@ public class DatabaseService
     }
 
     // Perfil del usuario (nivel y experiencia).
-    public async Task<UserProfile> GetUserProfileAsync()
+    public async Task<UserProfile> GetUserProfileAsync(int userId)
     {
         await InitAsync();
 
-        var profile = await _database!.Table<UserProfile>().FirstOrDefaultAsync();
+        var profile = await _database!.Table<UserProfile>()
+            .Where(p => p.UserId == userId)
+            .FirstOrDefaultAsync();
 
         if (profile is not null)
         {
@@ -289,10 +378,13 @@ public class DatabaseService
 
         var newProfile = new UserProfile
         {
-            Id = 1,
+            UserId = userId,
             Level = 1,
             CurrentXP = 0,
-            Coins = 0
+            Coins = 0,
+            Health = 50,
+            MaxHealth = 50,
+            LastLoginDate = DateTime.Today
         };
 
         await _database.InsertAsync(newProfile);

@@ -41,4 +41,20 @@
     <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}"/>
     <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
     <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
+
+    <!-- Paleta principal Frutiger Aero moderno -->
+    <Color x:Key="AeroSky">#76E4FF</Color>
+    <Color x:Key="AeroSkyDeep">#12A8FF</Color>
+    <Color x:Key="AeroSkyNight">#1A2E40</Color>
+    <Color x:Key="AeroLime">#9BFF5B</Color>
+    <Color x:Key="AeroGlassDark">#162533</Color>
+    <Color x:Key="AeroPanel">#203546</Color>
+    <Color x:Key="AeroPanelLight">#2C4A60</Color>
+    <Color x:Key="AeroGold">#FFD259</Color>
+    <Color x:Key="AeroRed">#FF5C5C</Color>
+    <Color x:Key="AeroGlow">#7BE7FF</Color>
+    <Color x:Key="AeroText">#F3F7FA</Color>
+    <Color x:Key="AeroSubText">#B7C7D1</Color>
+    <Color x:Key="AeroBackgroundTop">#1E5FA9</Color>
+    <Color x:Key="AeroBackgroundBottom">#0F2B4C</Color>
 </ResourceDictionary>

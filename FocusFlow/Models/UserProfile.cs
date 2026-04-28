@@ -4,8 +4,10 @@ namespace FocusFlow.Models
 {
     public class UserProfile
     {
-        [PrimaryKey]
+        [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
+
+        public int UserId { get; set; }
 
         public int Level { get; set; } = 1;
 

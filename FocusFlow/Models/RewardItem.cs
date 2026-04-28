@@ -14,5 +14,9 @@ namespace FocusFlow.Models
         public int Cost { get; set; }
 
         public string ImagePath { get; set; }
+
+        public bool IsSystemReward { get; set; }
+
+        public int HealthRestore { get; set; }
     }
 }

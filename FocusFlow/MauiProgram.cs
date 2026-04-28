@@ -2,6 +2,7 @@
 using FocusFlow.Services;
 using FocusFlow.ViewModels;
 using Plugin.LocalNotification;
+using Plugin.Maui.Audio;
 
 namespace FocusFlow
 {
@@ -20,10 +21,13 @@ namespace FocusFlow
                 });
 
             builder.Services.AddSingleton<DatabaseService>();
+            builder.Services.AddSingleton(AudioManager.Current);
+            builder.Services.AddSingleton<SoundService>();
             builder.Services.AddTransient<MainViewModel>();
             builder.Services.AddTransient<MainPage>();
             builder.Services.AddTransient<ProfileViewModel>();
             builder.Services.AddTransient<ProfilePage>();
+            builder.Services.AddTransient<LoginPage>();
 
 #if DEBUG
     		builder.Logging.AddDebug();

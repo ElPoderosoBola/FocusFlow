@@ -1,10 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:viewmodel="clr-namespace:FocusFlow.ViewModels"
-             x:Class="FocusFlow.LoginPage"
-             x:DataType="viewmodel:LoginViewModel"
-             BackgroundColor="Black">
+             x:Class="FocusFlow.LoginPage">
+
+    <ContentPage.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="{StaticResource AeroBackgroundTop}" Offset="0.0" />
+            <GradientStop Color="{StaticResource AeroBackgroundBottom}" Offset="1.0" />
+        </LinearGradientBrush>
+    </ContentPage.Background>
 
     <VerticalStackLayout VerticalOptions="Center" Spacing="30" Padding="40">
 
@@ -12,47 +16,49 @@
             <Label Text="FOCUS" 
                    FontSize="48" 
                    FontAttributes="Bold" 
-                   TextColor="White" 
+                   TextColor="{StaticResource AeroText}" 
                    HorizontalOptions="Center" 
                    CharacterSpacing="5"/>
             <Label Text="FLOW" 
                    FontSize="48" 
                    FontAttributes="Bold" 
-                   TextColor="#00A4EF" 
+                   TextColor="{StaticResource AeroGlow}" 
                    HorizontalOptions="Center" 
                    CharacterSpacing="5" 
                    Margin="0,-15,0,0"/>
         </VerticalStackLayout>
 
         <VerticalStackLayout Spacing="15">
-            <Entry Placeholder="USUARIO" 
-                   BackgroundColor="#1D1D1D" 
-                   TextColor="White" 
-                   PlaceholderColor="Gray"
+            <Entry x:Name="UsernameEntry"
+                   Placeholder="USUARIO" 
+                   BackgroundColor="{StaticResource AeroPanel}" 
+                   TextColor="{StaticResource AeroText}" 
+                   PlaceholderColor="{StaticResource AeroSubText}"
                    HeightRequest="50"
                    Keyboard="Text" />
 
-            <Entry Placeholder="CONTRASEÑA" 
-                   BackgroundColor="#1D1D1D" 
-                   TextColor="White" 
-                   PlaceholderColor="Gray"
+            <Entry x:Name="PasswordEntry"
+                   Placeholder="CONTRASEÑA" 
+                   BackgroundColor="{StaticResource AeroPanel}" 
+                   TextColor="{StaticResource AeroText}" 
+                   PlaceholderColor="{StaticResource AeroSubText}"
                    HeightRequest="50"
                    IsPassword="True" />
         </VerticalStackLayout>
 
         <VerticalStackLayout Spacing="15">
             <Button Text="ENTRAR" 
-                    Command="{Binding LoginCommand}"
-                    BackgroundColor="#00A4EF" 
+                    Clicked="OnLoginClicked"
+                    BackgroundColor="{StaticResource AeroSkyDeep}" 
                     TextColor="White" 
                     FontAttributes="Bold"
                     HeightRequest="60"
                     CornerRadius="0" />
 
             <Button Text="CREAR CUENTA" 
-                    Command="{Binding RegisterCommand}"
-                    BackgroundColor="#333333" 
-                    TextColor="White" 
+                    Clicked="OnRegisterClicked"
+                    BackgroundColor="{StaticResource AeroPanelSoft}" 
+                    TextColor="{StaticResource AeroText}" 
                     FontAttributes="Bold"
                     HeightRequest="60"
                     CornerRadius="0" />
