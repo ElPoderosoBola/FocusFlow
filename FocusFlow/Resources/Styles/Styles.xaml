@@ -3,20 +3,6 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- Estilos Aero Moderno -->
-    <Style x:Key="AeroSectionTitle" TargetType="Label">
-        <Setter Property="TextColor" Value="{StaticResource AeroSky}" />
-        <Setter Property="FontSize" Value="28" />
-        <Setter Property="FontAttributes" Value="Bold" />
-    </Style>
-
-    <Style x:Key="AeroCard" TargetType="Border">
-        <Setter Property="BackgroundColor" Value="{StaticResource AeroPanel}" />
-        <Setter Property="Stroke" Value="{StaticResource AeroSky}" />
-        <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 14" />
-    </Style>
-
     <Style x:Key="AeroGlassCard" TargetType="Border">
         <Setter Property="BackgroundColor" Value="{StaticResource AeroPanelLight}" />
         <Setter Property="Stroke" Value="{StaticResource AeroSky}" />
@@ -27,13 +13,6 @@
                 <Shadow Brush="{StaticResource AeroSky}" Opacity="0.25" Radius="18" Offset="0,6" />
             </Setter.Value>
         </Setter>
-    </Style>
-
-    <Style x:Key="AeroActionButton" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="{StaticResource AeroSkyDeep}" />
-        <Setter Property="TextColor" Value="White" />
-        <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="CornerRadius" Value="12" />
     </Style>
 
     <Style x:Key="AeroStatLabel" TargetType="Label">
@@ -419,30 +398,6 @@
             </VisualStateGroupList>
         </Setter>
     </Style>
-  
-    <!--
-    <Style TargetType="TitleBar">
-        <Setter Property="MinimumHeightRequest" Value="32"/>
-        <Setter Property="VisualStateManager.VisualStateGroups">
-            <VisualStateGroupList>
-                <VisualStateGroup x:Name="TitleActiveStates">
-                    <VisualState x:Name="TitleBarTitleActive">
-                        <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="Transparent" />
-                            <Setter Property="ForegroundColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
-                        </VisualState.Setters>
-                    </VisualState>
-                    <VisualState x:Name="TitleBarTitleInactive">
-                        <VisualState.Setters>
-                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />
-                            <Setter Property="ForegroundColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}" />
-                        </VisualState.Setters>
-                    </VisualState>
-                </VisualStateGroup>
-            </VisualStateGroupList>
-        </Setter>
-    </Style>
-    -->
 
     <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="0"/>
@@ -475,7 +430,6 @@
         <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
     </Style>
 
-    <!-- Estilos de la app (Frutiger Aero moderno) -->
     <Style x:Key="AeroSectionTitle" TargetType="Label">
         <Setter Property="TextColor" Value="{StaticResource AeroText}" />
         <Setter Property="FontSize" Value="28" />

@@ -4,131 +4,86 @@
              xmlns:viewmodel="clr-namespace:FocusFlow.ViewModels"
              xmlns:models="clr-namespace:FocusFlow.Models"
              x:Class="FocusFlow.ProfilePage"
-             x:DataType="viewmodel:ProfileViewModel">
+             x:DataType="viewmodel:ProfileViewModel"
+             Title="Mi Perfil">
 
-    <ContentPage.Background>
-        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="{StaticResource AeroBackgroundTop}" Offset="0.0" />
-            <GradientStop Color="{StaticResource AeroBackgroundBottom}" Offset="1.0" />
-        </LinearGradientBrush>
-    </ContentPage.Background>
+	<ContentPage.Background>
+		<LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+			<GradientStop Color="{StaticResource AeroBackgroundTop}" Offset="0.0" />
+			<GradientStop Color="{StaticResource AeroBackgroundBottom}" Offset="1.0" />
+		</LinearGradientBrush>
+	</ContentPage.Background>
 
-    <ScrollView>
-        <VerticalStackLayout Spacing="25" Padding="0,0,0,30">
+	<ScrollView>
+		<VerticalStackLayout Spacing="25" Padding="20,30,20,40">
 
-            <Border Style="{StaticResource AeroCard}" Margin="20,20,20,0" Padding="30">
-                <VerticalStackLayout Spacing="15" HorizontalOptions="Center">
+			<Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
+				<Label Text="👤 MI PERFIL" Style="{StaticResource AeroSectionTitle}" VerticalOptions="Center" />
+				<Button Grid.Column="1" Text="🚪 SALIR" Command="{Binding LogoutCommand}" Style="{StaticResource AeroGhostButton}" />
+			</Grid>
 
-                    <Label Text="PERFIL DE HÉROE" 
-                           FontSize="12" 
-                           TextColor="{StaticResource AeroGlow}" 
-                           HorizontalOptions="Center" 
-                           CharacterSpacing="2" 
-                           FontAttributes="Bold"/>
+			<Border Style="{StaticResource AeroGlassCard}" Padding="20">
+				<VerticalStackLayout Spacing="15">
+					<Label Text="ESTADÍSTICAS GENERALES" TextColor="{StaticResource AeroSkyDeep}" FontAttributes="Bold" FontSize="14" CharacterSpacing="2" />
 
-                    <Label Text="{Binding CurrentUserProfile.Level, StringFormat='NIVEL {0}'}"
-                           FontSize="48"
-                           FontAttributes="Bold"
-                           TextColor="{StaticResource AeroText}"
-                           HorizontalOptions="Center" />
+					<Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto" RowSpacing="15" ColumnSpacing="15">
 
-                    <HorizontalStackLayout Spacing="25" HorizontalOptions="Center">
-                        <Label Text="{Binding CurrentUserProfile.Health, StringFormat='❤️ {0}'}"
-                               TextColor="#FF5C5C"
-                               FontSize="20"
-                               FontAttributes="Bold"/>
-                        <Label Text="/" TextColor="{StaticResource AeroSubText}" FontSize="20"/>
-                        <Label Text="{Binding CurrentUserProfile.MaxHealth}"
-                               TextColor="{StaticResource AeroSubText}"
-                               FontSize="20"
-                               FontAttributes="Bold"/>
-                    </HorizontalStackLayout>
+						<VerticalStackLayout Grid.Row="0" Grid.Column="0" Spacing="0">
+							<Label Text="Nivel Actual" TextColor="{StaticResource AeroSubText}" FontSize="12" FontAttributes="Bold"/>
+							<Label Text="{Binding CurrentUserProfile.Level}" TextColor="White" FontSize="32" FontAttributes="Bold" />
+						</VerticalStackLayout>
 
-                    <Label Text="{Binding CurrentUserProfile.Coins, StringFormat='💰 {0} MONEDAS'}"
-                           TextColor="#FFB900"
-                           FontSize="22"
-                           FontAttributes="Bold"
-                           HorizontalOptions="Center" />
-                </VerticalStackLayout>
-            </Border>
+						<VerticalStackLayout Grid.Row="0" Grid.Column="1" Spacing="0">
+							<Label Text="Experiencia" TextColor="{StaticResource AeroSubText}" FontSize="12" FontAttributes="Bold"/>
+							<Label Text="{Binding CurrentUserProfile.CurrentXP, StringFormat='{0} XP'}" TextColor="{StaticResource AeroGold}" FontSize="24" FontAttributes="Bold" />
+						</VerticalStackLayout>
 
-            <VerticalStackLayout Spacing="20" Padding="20,0">
+						<VerticalStackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="5" Margin="0,10,0,0">
+							<Label Text="🎒 Espacio de Caprichos (Tienda):" TextColor="{StaticResource AeroSubText}" FontSize="14" FontAttributes="Bold" />
+							<HorizontalStackLayout Spacing="5">
+								<Label Text="{Binding CurrentCustomRewards}" TextColor="White" FontSize="20" FontAttributes="Bold" />
+								<Label Text="/" TextColor="{StaticResource AeroSubText}" FontSize="20" />
+								<Label Text="{Binding MaxCustomRewards}" TextColor="{StaticResource AeroSubText}" FontSize="20" />
+								<Label Text="usados" TextColor="{StaticResource AeroSubText}" FontSize="14" VerticalOptions="Center" Margin="5,0,0,0"/>
+							</HorizontalStackLayout>
+						</VerticalStackLayout>
 
-                <Button Text="CERRAR SESIÓN"
-                        Command="{Binding LogoutCommand}"
-                        BackgroundColor="{StaticResource AeroRed}"
-                        TextColor="White"
-                        FontAttributes="Bold"
-                        HeightRequest="50"
-                        CornerRadius="0" />
+					</Grid>
+				</VerticalStackLayout>
+			</Border>
 
-                <Border Style="{StaticResource AeroCard}" BackgroundColor="#233545" StrokeThickness="0" Padding="15">
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="CUPO DE RECOMPENSAS CUSTOM" TextColor="{StaticResource Gray300}" FontSize="12" FontAttributes="Bold" />
-                        <Label Text="{Binding CurrentCustomRewards, StringFormat='Usadas: {0}'}" TextColor="White" FontSize="16" />
-                        <Label Text="{Binding MaxCustomRewards, StringFormat='Máximo disponible: {0}'}" TextColor="{StaticResource AeroSky}" FontSize="16" FontAttributes="Bold" />
-                    </VerticalStackLayout>
-                </Border>
+			<Label Text="🏆 TUS LOGROS" Style="{StaticResource AeroSectionTitle}" Margin="0,10,0,0" />
 
-                <Label Text="MIS LOGROS" 
-                       Style="{StaticResource AeroSectionTitle}" />
+			<CollectionView ItemsSource="{Binding Achievements}">
+				<CollectionView.ItemTemplate>
+					<DataTemplate x:DataType="models:AchievementItem">
+						<Border Margin="0,0,0,12">
 
-                <CollectionView ItemsSource="{Binding Achievements}">
-                    <CollectionView.ItemsLayout>
-                        <GridItemsLayout Orientation="Vertical" Span="2" VerticalItemSpacing="15" HorizontalItemSpacing="15" />
-                    </CollectionView.ItemsLayout>
+							<Border.Style>
+								<Style TargetType="Border" BasedOn="{StaticResource AeroCardSoft}">
+									<Style.Triggers>
+										<DataTrigger TargetType="Border" Binding="{Binding IsUnlocked}" Value="False">
+											<Setter Property="Opacity" Value="0.4" />
+											<Setter Property="BackgroundColor" Value="#1A2E40" />
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</Border.Style>
 
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="models:AchievementItem">
-                            <Border Style="{StaticResource AeroCardSoft}" Padding="15" HeightRequest="140">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="BackgroundColor" Value="{StaticResource AeroPanelSoft}" />
-                                        <Style.Triggers>
-                                            <DataTrigger TargetType="Border" Binding="{Binding IsUnlocked}" Value="True">
-                                                <Setter Property="BackgroundColor" Value="{StaticResource AeroGold}" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
+							<Grid ColumnDefinitions="Auto, *" Padding="15" ColumnSpacing="15">
+								<Label Grid.Column="0" Text="🏅" FontSize="34" VerticalOptions="Center" />
 
-                                <VerticalStackLayout VerticalOptions="Center" Spacing="5">
-                                    <Label Text="{Binding Title}" 
-                                           FontSize="16" 
-                                           FontAttributes="Bold">
-                                        <Label.Style>
-                                            <Style TargetType="Label">
-                                                <Setter Property="TextColor" Value="{StaticResource AeroSubText}" />
-                                                <Style.Triggers>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding IsUnlocked}" Value="True">
-                                                        <Setter Property="TextColor" Value="#2C2C2C" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Label.Style>
-                                    </Label>
+								<VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+									<Label Text="{Binding Title}" TextColor="{StaticResource AeroText}" FontSize="18" FontAttributes="Bold" />
+									<Label Text="{Binding Description}" TextColor="{StaticResource AeroSubText}" FontSize="13" />
+								</VerticalStackLayout>
+							</Grid>
 
-                                    <Label Text="{Binding Description}" 
-                                           FontSize="11" 
-                                           LineBreakMode="WordWrap">
-                                        <Label.Style>
-                                            <Style TargetType="Label">
-                                                <Setter Property="TextColor" Value="{StaticResource AeroSubText}" />
-                                                <Style.Triggers>
-                                                    <DataTrigger TargetType="Label" Binding="{Binding IsUnlocked}" Value="True">
-                                                        <Setter Property="TextColor" Value="#2C2C2C" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Label.Style>
-                                    </Label>
-                                </VerticalStackLayout>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </VerticalStackLayout>
+						</Border>
+					</DataTemplate>
+				</CollectionView.ItemTemplate>
+			</CollectionView>
 
-        </VerticalStackLayout>
-    </ScrollView>
+		</VerticalStackLayout>
+	</ScrollView>
 </ContentPage>

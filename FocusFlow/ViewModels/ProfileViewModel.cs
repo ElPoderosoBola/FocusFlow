@@ -32,7 +32,6 @@ public partial class ProfileViewModel : ObservableObject
 
     public async Task LoadProfileDataAsync()
     {
-        // Carga perfil y logros desde SQLite para mostrarlos en pantalla.
         var session = await _databaseService.GetUserSessionAsync();
         CurrentUserProfile = await _databaseService.GetUserProfileAsync(session.CurrentUserId);
         var achievementList = await _databaseService.GetAchievementsAsync();
@@ -46,12 +45,13 @@ public partial class ProfileViewModel : ObservableObject
     [RelayCommand]
     private async Task LogoutAsync()
     {
-        await _soundService.PlayClickAsync();
 
         var session = await _databaseService.GetUserSessionAsync();
         session.CurrentUserId = 0;
         session.LastAccessDate = DateTime.Today;
         await _databaseService.SaveUserSessionAsync(session);
+
+        await _soundService.PlayLogoutAsync(); // <-- ¡Suena Shutdown.mp3 al salir!
 
         Application.Current.Windows[0].Page = new LoginPage(_databaseService, _soundService);
     }

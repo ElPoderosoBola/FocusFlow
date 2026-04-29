@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="FocusFlow.LoginPage">
+             x:Class="FocusFlow.LoginPage"
+             Shell.NavBarIsVisible="False">
 
     <ContentPage.Background>
         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -10,59 +11,51 @@
         </LinearGradientBrush>
     </ContentPage.Background>
 
-    <VerticalStackLayout VerticalOptions="Center" Spacing="30" Padding="40">
+    <VerticalStackLayout VerticalOptions="Center" Spacing="30" Padding="30">
 
-        <VerticalStackLayout Spacing="0" HorizontalOptions="Center" Margin="0,0,0,20">
-            <Label Text="FOCUS" 
-                   FontSize="48" 
-                   FontAttributes="Bold" 
-                   TextColor="{StaticResource AeroText}" 
-                   HorizontalOptions="Center" 
-                   CharacterSpacing="5"/>
-            <Label Text="FLOW" 
-                   FontSize="48" 
-                   FontAttributes="Bold" 
-                   TextColor="{StaticResource AeroGlow}" 
-                   HorizontalOptions="Center" 
-                   CharacterSpacing="5" 
-                   Margin="0,-15,0,0"/>
-        </VerticalStackLayout>
+        <Label Text="✨ FOCUSFLOW" 
+               FontSize="36" 
+               FontAttributes="Bold" 
+               TextColor="{StaticResource AeroGlow}" 
+               HorizontalOptions="Center" 
+               CharacterSpacing="4"/>
 
-        <VerticalStackLayout Spacing="15">
-            <Entry x:Name="UsernameEntry"
-                   Placeholder="USUARIO" 
-                   BackgroundColor="{StaticResource AeroPanel}" 
-                   TextColor="{StaticResource AeroText}" 
-                   PlaceholderColor="{StaticResource AeroSubText}"
-                   HeightRequest="50"
-                   Keyboard="Text" />
+        <Label Text="Gamifica tu productividad" 
+               TextColor="{StaticResource AeroPanelLight}" 
+               HorizontalOptions="Center" 
+               FontSize="16" 
+               Margin="0,-20,0,0"/>
 
-            <Entry x:Name="PasswordEntry"
-                   Placeholder="CONTRASEÑA" 
-                   BackgroundColor="{StaticResource AeroPanel}" 
-                   TextColor="{StaticResource AeroText}" 
-                   PlaceholderColor="{StaticResource AeroSubText}"
-                   HeightRequest="50"
-                   IsPassword="True" />
-        </VerticalStackLayout>
+        <Border Style="{StaticResource AeroGlassCard}" Padding="20">
+            <VerticalStackLayout Spacing="20">
 
-        <VerticalStackLayout Spacing="15">
-            <Button Text="ENTRAR" 
-                    Clicked="OnLoginClicked"
-                    BackgroundColor="{StaticResource AeroSkyDeep}" 
-                    TextColor="White" 
-                    FontAttributes="Bold"
-                    HeightRequest="60"
-                    CornerRadius="0" />
+                <Border Style="{StaticResource AeroCardSoft}" Padding="10,0">
+                    <Entry x:Name="UsernameEntry" 
+                           Placeholder="👤 Nombre de héroe" 
+                           TextColor="White" 
+                           PlaceholderColor="{StaticResource AeroSubText}"
+                           FontSize="16"/>
+                </Border>
 
-            <Button Text="CREAR CUENTA" 
-                    Clicked="OnRegisterClicked"
-                    BackgroundColor="{StaticResource AeroPanelSoft}" 
-                    TextColor="{StaticResource AeroText}" 
-                    FontAttributes="Bold"
-                    HeightRequest="60"
-                    CornerRadius="0" />
-        </VerticalStackLayout>
+                <Border Style="{StaticResource AeroCardSoft}" Padding="10,0">
+                    <Entry x:Name="PasswordEntry" 
+                           Placeholder="🔑 Contraseña secreta" 
+                           IsPassword="True" 
+                           TextColor="White" 
+                           PlaceholderColor="{StaticResource AeroSubText}"
+                           FontSize="16"/>
+                </Border>
 
+                <Button Text="ENTRAR AL JUEGO" 
+                        Clicked="OnLoginClicked" 
+                        Style="{StaticResource AeroActionButton}" 
+                        Margin="0,10,0,0"/>
+
+                <Button Text="CREAR NUEVA CUENTA" 
+                        Clicked="OnRegisterClicked" 
+                        Style="{StaticResource AeroGhostButton}" />
+
+            </VerticalStackLayout>
+        </Border>
     </VerticalStackLayout>
 </ContentPage>

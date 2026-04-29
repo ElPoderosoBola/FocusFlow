@@ -4,39 +4,25 @@ namespace FocusFlow.Services;
 
 public class SoundService
 {
-    private readonly IAudioManager _audioManager;
-
-    public SoundService(IAudioManager audioManager)
-    {
-        _audioManager = audioManager;
-    }
-
-    public async Task PlayClickAsync()
-    {
-        await PlaySoundAsync("click.mp3");
-    }
-
-    public async Task PlaySuccessAsync()
-    {
-        await PlaySoundAsync("success.mp3");
-    }
-
-    public async Task PlayFailAsync()
-    {
-        await PlaySoundAsync("fail.mp3");
-    }
-
-    private async Task PlaySoundAsync(string fileName)
+    private async Task PlaySoundAsync(string filename)
     {
         try
         {
-            using var stream = await FileSystem.OpenAppPackageFileAsync(fileName);
-            var player = _audioManager.CreatePlayer(stream);
+            var player = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync(filename));
             player.Play();
         }
         catch
         {
-            // Si el archivo no existe aún, no bloqueamos la app.
+            // Si el archivo no está o hay un error, lo ignoramos para que la app no explote
         }
     }
+
+    public Task PlayFailAsync() => PlaySoundAsync("MisionFallida.mp3");
+    public Task PlayTaDaAsync() => PlaySoundAsync("TaDa.mp3");
+    public Task PlayLoginAsync() => PlaySoundAsync("Chimes.mp3");
+    public Task PlayLogoutAsync() => PlaySoundAsync("Shutdown.mp3");
+    public Task PlayRewardBoughtAsync() => PlaySoundAsync("SpeechOn.mp3");
+    public Task PlayCreatedAsync() => PlaySoundAsync("SonidoNormal.mp3");
+    public Task PlayDeletedAsync() => PlaySoundAsync("Trash.mp3");
+    public Task PlayClickAsync() => PlaySoundAsync("PopUp.mp3");
 }

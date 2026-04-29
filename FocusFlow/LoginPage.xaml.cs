@@ -1,5 +1,5 @@
-using FocusFlow.Models;
 using FocusFlow.Services;
+using FocusFlow.Models;
 
 namespace FocusFlow;
 
@@ -15,76 +15,61 @@ public partial class LoginPage : ContentPage
         _soundService = soundService;
     }
 
-    private async void OnLoginClicked(object? sender, EventArgs e)
+    private async void OnLoginClicked(object sender, EventArgs e)
     {
-        await _soundService.PlayClickAsync();
 
-        var username = UsernameEntry.Text?.Trim() ?? string.Empty;
-        var password = PasswordEntry.Text?.Trim() ?? string.Empty;
+        string username = UsernameEntry.Text?.Trim();
+        string password = PasswordEntry.Text?.Trim();
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            await DisplayAlert("Login", "Debes escribir usuario y contraseña.", "OK");
+            await DisplayAlert("Aviso", "¡Necesitas tu nombre y contraseña para entrar!", "OK");
             return;
         }
 
         var user = await _databaseService.LoginUserAsync(username, password);
-        if (user is null)
+
+        if (user != null)
+        {
+            var session = await _databaseService.GetUserSessionAsync();
+            session.CurrentUserId = user.Id;
+            await _databaseService.SaveUserSessionAsync(session);
+
+            await _soundService.PlayLoginAsync(); // <-- ¡Suena Chimes.mp3 al logearse!
+
+            Application.Current.Windows[0].Page = new AppShell();
+        }
+        else
         {
             await _soundService.PlayFailAsync();
-            await DisplayAlert("Login", "Usuario o contraseña incorrectos.", "OK");
-            return;
+            await DisplayAlert("Error", "El nombre o la contraseña no coinciden.", "Vaya...");
         }
-
-        var session = await _databaseService.GetUserSessionAsync();
-        session.CurrentUserId = user.Id;
-        session.LastAccessDate = DateTime.Today;
-        await _databaseService.SaveUserSessionAsync(session);
-
-        await _soundService.PlaySuccessAsync();
-        Application.Current.Windows[0].Page = new AppShell();
     }
 
-    private async void OnRegisterClicked(object? sender, EventArgs e)
+    private async void OnRegisterClicked(object sender, EventArgs e)
     {
-        await _soundService.PlayClickAsync();
 
-        var username = UsernameEntry.Text?.Trim() ?? string.Empty;
-        var password = PasswordEntry.Text?.Trim() ?? string.Empty;
+        string username = UsernameEntry.Text?.Trim();
+        string password = PasswordEntry.Text?.Trim();
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            await DisplayAlert("Registro", "Debes escribir usuario y contraseña.", "OK");
+            await DisplayAlert("Aviso", "Escribe un nombre y contraseña para registrarte.", "OK");
             return;
         }
 
-        var newUser = new User
-        {
-            Username = username,
-            Password = password
-        };
+        var newUser = new User { Username = username, Password = password };
+        var success = await _databaseService.RegisterUserAsync(newUser);
 
-        var registered = await _databaseService.RegisterUserAsync(newUser);
-        if (!registered)
+        if (success)
+        {
+            await _soundService.PlayCreatedAsync(); // <-- Suena SonidoNormal.mp3
+            await DisplayAlert("¡Bienvenido!", "Tu cuenta ha sido creada. Ahora dale a ENTRAR.", "¡Genial!");
+        }
+        else
         {
             await _soundService.PlayFailAsync();
-            await DisplayAlert("Registro", "Ese nombre de usuario ya existe.", "OK");
-            return;
+            await DisplayAlert("Error", "Ese nombre de héroe ya está pillado. Elige otro.", "OK");
         }
-
-        var savedUser = await _databaseService.LoginUserAsync(username, password);
-        if (savedUser is null)
-        {
-            await DisplayAlert("Registro", "Error al iniciar con el usuario recién creado.", "OK");
-            return;
-        }
-
-        var session = await _databaseService.GetUserSessionAsync();
-        session.CurrentUserId = savedUser.Id;
-        session.LastAccessDate = DateTime.Today;
-        await _databaseService.SaveUserSessionAsync(session);
-
-        await _soundService.PlaySuccessAsync();
-        Application.Current.Windows[0].Page = new AppShell();
     }
 }
