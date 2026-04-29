@@ -441,7 +441,10 @@ public partial class MainViewModel : ObservableObject
         try
         {
             await _soundService.PlayClickAsync();
-            if (reward is null || reward.IsSystemReward) return;
+
+            // 🛡️ ESCUDO ACTIVADO: Si es de sistema, salimos de aquí sin hacer nada
+            if (reward == null || reward.IsSystemReward) return;
+
             if (!await Application.Current.MainPage.DisplayAlert("Eliminar", "¿Borrar este capricho?", "Sí", "No")) return;
 
             await _databaseService.DeleteRewardAsync(reward);

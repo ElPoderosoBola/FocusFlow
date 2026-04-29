@@ -14,7 +14,9 @@ public class DatabaseService
             return;
         }
 
-        var databasePath = Path.Combine(FileSystem.AppDataDirectory, "focusflow.db3");
+        // 🌟 ¡AQUÍ ESTÁ LA MAGIA! Le cambiamos el nombre a v2 para que empiece limpio
+        var databasePath = Path.Combine(FileSystem.AppDataDirectory, "focusflow_v2.db3");
+
         _database = new SQLiteAsyncConnection(databasePath);
         await _database.CreateTableAsync<TaskItem>();
         await _database.CreateTableAsync<HabitItem>();
@@ -176,6 +178,28 @@ public class DatabaseService
     public async Task<List<RewardItem>> GetRewardsAsync(int userId)
     {
         await InitAsync();
+
+        // 🏥 ¡OPERACIÓN ENFERMERÍA! 
+        // Antes de darte la lista, nos aseguramos de que tengas la poción.
+        var hasHealthReward = await _database!.Table<RewardItem>()
+            .Where(r => r.UserId == userId && r.IsSystemReward)
+            .FirstOrDefaultAsync();
+
+        if (hasHealthReward == null)
+        {
+            var healthReward = new RewardItem
+            {
+                UserId = userId,
+                Title = "Curación de Salud",
+                Cost = 25,
+                ImagePath = string.Empty,
+                IsSystemReward = true,
+                HealthRestore = 10
+            };
+            await _database.InsertAsync(healthReward);
+        }
+
+        // Ahora sí, devolvemos todas las recompensas del usuario
         return await _database!.Table<RewardItem>()
             .Where(r => r.UserId == userId)
             .ToListAsync();
@@ -396,6 +420,4 @@ public class DatabaseService
         await InitAsync();
         return await _database!.InsertOrReplaceAsync(profile);
     }
-
-
 }
