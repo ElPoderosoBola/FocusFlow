@@ -168,7 +168,7 @@ public partial class MainViewModel : ObservableObject
             await _databaseService.SaveTaskAsync(task);
 
             CurrentUserProfile.Health -= 10;
-            await _soundService.PlayFailAsync(); // <-- MisionFallida.mp3
+            await _soundService.PlayFailAsync();
             await NotifyMissionFailedAsync(task.Title);
             await Application.Current.MainPage.DisplayAlert("Fallida", $"No has completado {task.Title}", "OK");
             await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
@@ -192,7 +192,7 @@ public partial class MainViewModel : ObservableObject
                 habit.LastPenaltyDate = today;
                 await _databaseService.SaveHabitAsync(habit);
 
-                await _soundService.PlayFailAsync(); // <-- MisionFallida.mp3
+                await _soundService.PlayFailAsync();
                 await NotifyMissionFailedAsync(habit.Title);
                 await Application.Current.MainPage.DisplayAlert("Fallida", $"No has completado {habit.Title}", "OK");
                 await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
@@ -202,7 +202,13 @@ public partial class MainViewModel : ObservableObject
         if (CurrentUserProfile.Health <= 0) await ApplyGameOverAsync();
     }
 
-    public async Task LoadTasksAsync() { Tasks = new ObservableCollection<TaskItem>(await _databaseService.GetTasksAsync(_currentUserId)); }
+    // 💡 ¡EL FILTRO MÁGICO! Ahora las tareas completadas se ocultan visualmente
+    public async Task LoadTasksAsync()
+    {
+        var allTasks = await _databaseService.GetTasksAsync(_currentUserId);
+        Tasks = new ObservableCollection<TaskItem>(allTasks.Where(t => !t.IsCompleted && !t.IsFailed));
+    }
+
     public async Task LoadHabitsAsync() { Habits = new ObservableCollection<HabitItem>(await _databaseService.GetHabitsAsync(_currentUserId)); }
     public async Task LoadRewardsAsync() { Rewards = new ObservableCollection<RewardItem>(await _databaseService.GetRewardsAsync(_currentUserId)); }
 
@@ -227,6 +233,7 @@ public partial class MainViewModel : ObservableObject
     {
         var achievements = await _databaseService.GetAchievementsAsync();
         var unlockedAny = false;
+        string unlockedTitles = "";
 
         var apprentice = achievements.FirstOrDefault(a => a.Title == "Aprendiz");
         if (apprentice is not null && !apprentice.IsUnlocked && CurrentUserProfile.Level >= 2)
@@ -235,6 +242,7 @@ public partial class MainViewModel : ObservableObject
             CurrentUserProfile.Coins += 20;
             await _databaseService.UpdateAchievementAsync(apprentice);
             unlockedAny = true;
+            unlockedTitles += "🏅 Aprendiz (¡Por subir a Nivel 2!)\n";
         }
 
         var hoarder = achievements.FirstOrDefault(a => a.Title == "Acaparador");
@@ -244,6 +252,7 @@ public partial class MainViewModel : ObservableObject
             CurrentUserProfile.Coins += 20;
             await _databaseService.UpdateAchievementAsync(hoarder);
             unlockedAny = true;
+            unlockedTitles += "🏅 Acaparador (¡Por ahorrar 50 monedas!)\n";
         }
 
         var firstSteps = achievements.FirstOrDefault(a => a.Title == "Primeros Pasos");
@@ -254,11 +263,18 @@ public partial class MainViewModel : ObservableObject
             CurrentUserProfile.Coins += 20;
             await _databaseService.UpdateAchievementAsync(firstSteps);
             unlockedAny = true;
+            unlockedTitles += "🏅 Primeros Pasos (¡Por arrancar a moverte!)\n";
         }
 
         if (unlockedAny)
         {
-            await _soundService.PlayTaDaAsync(); // <-- TaDa.mp3 por ganar un logro extra
+            await _soundService.PlayTaDaAsync();
+
+            await Application.Current.MainPage.DisplayAlert(
+                "¡NUEVO LOGRO DESBLOQUEADO!",
+                $"Has conseguido:\n\n{unlockedTitles}\n¡Y te llevas monedas extra de premio!",
+                "¡SOY GENIAL!");
+
             await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
             OnPropertyChanged(nameof(CurrentUserProfile));
         }
@@ -274,6 +290,11 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task AddNewHabitAsync()
     {
+        await _soundService.PlayClickAsync();
+
+        bool attachImg = await Application.Current.MainPage.DisplayAlert("Imagen", "¿Quieres añadir una foto de tu galería?", "Sí", "No");
+        if (attachImg) await PickImageAsync();
+        else _pendingImagePath = null;
 
         var title = await Application.Current.MainPage.DisplayPromptAsync("Nuevo Hábito", "Nombre:");
         if (string.IsNullOrWhiteSpace(title)) return;
@@ -306,14 +327,18 @@ public partial class MainViewModel : ObservableObject
 
         await _databaseService.SaveHabitAsync(newHabit);
         Habits.Add(newHabit);
-        await _soundService.PlayCreatedAsync(); // <-- SonidoNormal.mp3
+        await _soundService.PlayCreatedAsync();
         _pendingImagePath = null;
     }
 
     [RelayCommand]
     private async Task AddNewTaskAsync()
     {
+        await _soundService.PlayClickAsync();
 
+        bool attachImg = await Application.Current.MainPage.DisplayAlert("Imagen", "¿Quieres añadir una foto de tu galería?", "Sí", "No");
+        if (attachImg) await PickImageAsync();
+        else _pendingImagePath = null;
 
         var title = await Application.Current.MainPage.DisplayPromptAsync("Nueva Tarea", "Nombre:");
         if (string.IsNullOrWhiteSpace(title)) return;
@@ -341,13 +366,14 @@ public partial class MainViewModel : ObservableObject
 
         await _databaseService.SaveTaskAsync(newTask);
         Tasks.Add(newTask);
-        await _soundService.PlayCreatedAsync(); // <-- SonidoNormal.mp3
+        await _soundService.PlayCreatedAsync();
         _pendingImagePath = null;
     }
 
     [RelayCommand]
     private async Task AddNewRewardAsync()
     {
+        await _soundService.PlayClickAsync();
 
         var maxCustomRewards = 15 + (CurrentUserProfile.Level * 5);
         if (Rewards.Count(r => !r.IsSystemReward) >= maxCustomRewards)
@@ -355,6 +381,10 @@ public partial class MainViewModel : ObservableObject
             await Application.Current.MainPage.DisplayAlert("Límite", $"Alcanzaste el tope ({maxCustomRewards}). ¡Sube de nivel!", "OK");
             return;
         }
+
+        bool attachImg = await Application.Current.MainPage.DisplayAlert("Imagen", "¿Quieres añadir una foto de tu galería?", "Sí", "No");
+        if (attachImg) await PickImageAsync();
+        else _pendingImagePath = null;
 
         var title = await Application.Current.MainPage.DisplayPromptAsync("Nueva Recompensa", "¿Qué capricho?");
         if (string.IsNullOrWhiteSpace(title)) return;
@@ -365,26 +395,63 @@ public partial class MainViewModel : ObservableObject
         var newReward = new RewardItem { UserId = _currentUserId, Title = title.Trim(), Cost = cost, ImagePath = _pendingImagePath };
         await _databaseService.SaveRewardAsync(newReward);
         Rewards.Add(newReward);
-        await _soundService.PlayCreatedAsync(); // <-- SonidoNormal.mp3
+        await _soundService.PlayCreatedAsync();
         _pendingImagePath = null;
     }
 
     [RelayCommand]
     private async Task DeleteTaskAsync(TaskItem task)
     {
-        if (task is null || !await Application.Current.MainPage.DisplayAlert("Eliminar", "¿Borrar esta tarea?", "Sí", "No")) return;
-        await _databaseService.DeleteTaskAsync(task);
-        Tasks.Remove(task);
-        await _soundService.PlayDeletedAsync(); // <-- Trash.mp3
+        try
+        {
+            await _soundService.PlayClickAsync();
+            if (task is null || !await Application.Current.MainPage.DisplayAlert("Eliminar", "¿Borrar esta tarea?", "Sí", "No")) return;
+
+            await _databaseService.DeleteTaskAsync(task);
+            Tasks.Remove(task);
+            await _soundService.PlayDeletedAsync();
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.MainPage.DisplayAlert("Error", ex.Message, "OK");
+        }
     }
 
     [RelayCommand]
     private async Task DeleteHabitAsync(HabitItem habit)
     {
-        if (habit is null || !await Application.Current.MainPage.DisplayAlert("Eliminar", "¿Borrar este hábito?", "Sí", "No")) return;
-        await _databaseService.DeleteHabitAsync(habit);
-        Habits.Remove(habit);
-        await _soundService.PlayDeletedAsync(); // <-- Trash.mp3
+        try
+        {
+            await _soundService.PlayClickAsync();
+            if (habit is null || !await Application.Current.MainPage.DisplayAlert("Eliminar", "¿Borrar este hábito?", "Sí", "No")) return;
+
+            await _databaseService.DeleteHabitAsync(habit);
+            Habits.Remove(habit);
+            await _soundService.PlayDeletedAsync();
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.MainPage.DisplayAlert("Error", ex.Message, "OK");
+        }
+    }
+
+    [RelayCommand]
+    private async Task DeleteRewardAsync(RewardItem reward)
+    {
+        try
+        {
+            await _soundService.PlayClickAsync();
+            if (reward is null || reward.IsSystemReward) return;
+            if (!await Application.Current.MainPage.DisplayAlert("Eliminar", "¿Borrar este capricho?", "Sí", "No")) return;
+
+            await _databaseService.DeleteRewardAsync(reward);
+            Rewards.Remove(reward);
+            await _soundService.PlayDeletedAsync();
+        }
+        catch (Exception ex)
+        {
+            await Application.Current.MainPage.DisplayAlert("Error", ex.Message, "OK");
+        }
     }
 
     [RelayCommand]
@@ -400,17 +467,17 @@ public partial class MainViewModel : ObservableObject
             if (CurrentUserProfile.Health <= 0) await ApplyGameOverAsync();
             else { await _databaseService.SaveUserProfileAsync(CurrentUserProfile); OnPropertyChanged(nameof(CurrentUserProfile)); }
 
-            await _soundService.PlayFailAsync(); // <-- MisionFallida.mp3
+            await _soundService.PlayFailAsync();
             await NotifyMissionFailedAsync(task.Title);
-            await LoadTasksAsync();
+            await LoadTasksAsync(); // <-- Al recargar aquí, la tarea fallida se oculta
             return;
         }
 
         task.IsCompleted = true;
         await _databaseService.SaveTaskAsync(task);
         await AddExperienceAsync(10, task.RewardCoins);
-        await LoadTasksAsync();
-        await _soundService.PlayTaDaAsync(); // <-- TaDa.mp3
+        await LoadTasksAsync(); // <-- Al recargar aquí, la tarea completada se oculta
+        await _soundService.PlayTaDaAsync();
         await CheckAchievementsAsync();
     }
 
@@ -434,14 +501,14 @@ public partial class MainViewModel : ObservableObject
             if (CurrentUserProfile.Health <= 0) await ApplyGameOverAsync();
             else { await _databaseService.SaveUserProfileAsync(CurrentUserProfile); OnPropertyChanged(nameof(CurrentUserProfile)); }
 
-            await _soundService.PlayFailAsync(); // <-- MisionFallida.mp3
+            await _soundService.PlayFailAsync();
             return;
         }
 
         await AddExperienceAsync(5, habit.RewardCoins);
         habit.LastCompletedDate = today;
         await _databaseService.SaveHabitAsync(habit);
-        await _soundService.PlayTaDaAsync(); // <-- TaDa.mp3
+        await _soundService.PlayTaDaAsync();
         await CheckAchievementsAsync();
     }
 
@@ -457,23 +524,11 @@ public partial class MainViewModel : ObservableObject
 
             await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
             OnPropertyChanged(nameof(CurrentUserProfile));
-            await _soundService.PlayRewardBoughtAsync(); // <-- SpeechOn.mp3
+            await _soundService.PlayRewardBoughtAsync();
             await Application.Current.MainPage.DisplayAlert("¡Premio!", "Disfruta de tu recompensa", "OK");
             return;
         }
-        await _soundService.PlayFailAsync(); // <-- MisionFallida.mp3
+        await _soundService.PlayFailAsync();
         await Application.Current.MainPage.DisplayAlert("Aviso", "No tienes suficientes monedas", "OK");
-    }
-
-    [RelayCommand]
-    private async Task DeleteRewardAsync(RewardItem reward)
-    {
-        if (reward is null || reward.IsSystemReward) return;
-
-        if (!await Application.Current.MainPage.DisplayAlert("Eliminar", "¿Borrar este capricho?", "Sí", "No")) return;
-
-        await _databaseService.DeleteRewardAsync(reward);
-        Rewards.Remove(reward);
-        await _soundService.PlayDeletedAsync(); // <-- Trash.mp3
     }
 }
