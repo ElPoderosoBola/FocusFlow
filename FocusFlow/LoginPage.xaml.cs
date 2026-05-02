@@ -90,7 +90,7 @@ public partial class LoginPage : ContentPage
         else
         {
             await _soundService.PlayFailAsync();
-            await ShowAeroAlert("Error", "Ese nombre de héroe ya está pillado. Elige otro.");
+            await ShowAeroAlert("Error", "Ese nombre  ya está pillado. Elige otro.");
         }
     }
 }

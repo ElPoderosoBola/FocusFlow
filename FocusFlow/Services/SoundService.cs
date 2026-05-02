@@ -4,11 +4,16 @@ namespace FocusFlow.Services;
 
 public class SoundService
 {
-    private async Task PlaySoundAsync(string filename)
+    // Le añadimos un parámetro opcional de volumen (por defecto siempre estará al máximo: 1.0)
+    private async Task PlaySoundAsync(string filename, double volume = 1.0)
     {
         try
         {
             var player = AudioManager.Current.CreatePlayer(await FileSystem.OpenAppPackageFileAsync(filename));
+
+            // Ajustamos la rueda de volumen antes de darle al Play
+            player.Volume = volume;
+
             player.Play();
         }
         catch
@@ -23,6 +28,10 @@ public class SoundService
     public Task PlayLogoutAsync() => PlaySoundAsync("Shutdown.mp3");
     public Task PlayRewardBoughtAsync() => PlaySoundAsync("SpeechOn.mp3");
     public Task PlayCreatedAsync() => PlaySoundAsync("SonidoNormal.mp3");
-    public Task PlayDeletedAsync() => PlaySoundAsync("Trash.mp3");
+
+    // 🗑️ ¡Cubo de basura silenciado a la mitad de su capacidad! (0.5)
+    public Task PlayDeletedAsync() => PlaySoundAsync("Trash.mp3", 0.3);
+
+    // Si el PopUp.mp3 también te suena muy fuerte, podrías hacer lo mismo: PlaySoundAsync("PopUp.mp3", 0.3);
     public Task PlayClickAsync() => PlaySoundAsync("PopUp.mp3");
 }

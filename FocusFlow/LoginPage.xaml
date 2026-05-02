@@ -23,10 +23,10 @@
             <Border Style="{StaticResource AeroGlassCard}" Padding="20">
                 <VerticalStackLayout Spacing="20">
                     <Border Style="{StaticResource AeroCardSoft}" Padding="10,0">
-                        <Entry x:Name="UsernameEntry" Placeholder="👤 Nombre de héroe" TextColor="White" PlaceholderColor="{StaticResource AeroSubText}" FontSize="16"/>
+                        <Entry x:Name="UsernameEntry" Placeholder="👤 Nombre" TextColor="White" PlaceholderColor="{StaticResource AeroSubText}" FontSize="16"/>
                     </Border>
                     <Border Style="{StaticResource AeroCardSoft}" Padding="10,0">
-                        <Entry x:Name="PasswordEntry" Placeholder="🔑 Contraseña secreta" IsPassword="True" TextColor="White" PlaceholderColor="{StaticResource AeroSubText}" FontSize="16"/>
+                        <Entry x:Name="PasswordEntry" Placeholder="🔑 Contraseña" IsPassword="True" TextColor="White" PlaceholderColor="{StaticResource AeroSubText}" FontSize="16"/>
                     </Border>
 
                     <Button Text="ENTRAR AL JUEGO" Clicked="OnLoginClicked" Style="{StaticResource AeroActionButton}" Margin="0,10,0,0"/>
