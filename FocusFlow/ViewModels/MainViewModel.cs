@@ -19,6 +19,20 @@ public partial class MainViewModel : ObservableObject
     private int _currentUserId = 1;
     private string? _pendingImagePath;
 
+    //VARIABLES PARA EL FORMULARIO FLOTANTE DE TAREAS
+    [ObservableProperty] private bool isCreatingTask;
+    [ObservableProperty] private string newTaskTitle;
+    [ObservableProperty] private string newTaskRewardCoinsText;
+    [ObservableProperty] private DateTime newTaskDate;
+    [ObservableProperty] private TimeSpan newTaskTime;
+
+    //VARIABLES PARA EL FORMULARIO FLOTANTE DE HÁBITOS
+    [ObservableProperty] private bool isCreatingHabit;
+    [ObservableProperty] private string newHabitTitle;
+    [ObservableProperty] private string newHabitRewardCoinsText;
+    [ObservableProperty] private TimeSpan newHabitTime;
+    [ObservableProperty] private string newHabitActiveDays;
+
     [ObservableProperty]
     private ObservableCollection<TaskItem> tasks = new();
 
@@ -202,7 +216,7 @@ public partial class MainViewModel : ObservableObject
         if (CurrentUserProfile.Health <= 0) await ApplyGameOverAsync();
     }
 
-    // 💡 ¡EL FILTRO MÁGICO! Ahora las tareas completadas se ocultan visualmente
+    //¡EL FILTRO MÁGICO! Ahora las tareas completadas se ocultan visualmente
     public async Task LoadTasksAsync()
     {
         var allTasks = await _databaseService.GetTasksAsync(_currentUserId);
@@ -288,76 +302,38 @@ public partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task AddNewHabitAsync()
-    {
-        await _soundService.PlayClickAsync();
-
-        bool attachImg = await Application.Current.MainPage.DisplayAlert("Imagen", "¿Quieres añadir una foto de tu galería?", "Sí", "No");
-        if (attachImg) await PickImageAsync();
-        else _pendingImagePath = null;
-
-        var title = await Application.Current.MainPage.DisplayPromptAsync("Nuevo Hábito", "Nombre:");
-        if (string.IsNullOrWhiteSpace(title)) return;
-
-        var rewardText = await Application.Current.MainPage.DisplayPromptAsync("Recompensa", "¿Cuántas monedas da?");
-        if (string.IsNullOrWhiteSpace(rewardText) || !int.TryParse(rewardText, out var rewardCoins) || rewardCoins < 0) return;
-
-        var timeText = await Application.Current.MainPage.DisplayPromptAsync("Hora", "Hora límite (HH:mm):");
-        if (string.IsNullOrWhiteSpace(timeText) || !TimeSpan.TryParseExact(timeText, "hh\\:mm", CultureInfo.InvariantCulture, out var scheduledTime)) return;
-
-        var daysText = await Application.Current.MainPage.DisplayPromptAsync(
-            "Días activos",
-            "Días (0=Dom..6=Sáb) por coma. Ej: 1,3,5");
-
-        if (string.IsNullOrWhiteSpace(daysText)) return;
-
-        var dayTokens = daysText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Where(x => int.TryParse(x, out var day) && day >= 0 && day <= 6).Distinct().ToArray();
-
-        var newHabit = new HabitItem
-        {
-            UserId = _currentUserId,
-            Title = title.Trim(),
-            ScheduledTime = scheduledTime,
-            ActiveDaysCsv = string.Join(',', dayTokens),
-            RewardCoins = rewardCoins,
-            IsPositive = true,
-            ImagePath = _pendingImagePath
-        };
-
-        await _databaseService.SaveHabitAsync(newHabit);
-        Habits.Add(newHabit);
-        await _soundService.PlayCreatedAsync();
-        _pendingImagePath = null;
-    }
-
-    [RelayCommand]
     private async Task AddNewTaskAsync()
     {
         await _soundService.PlayClickAsync();
-
         bool attachImg = await Application.Current.MainPage.DisplayAlert("Imagen", "¿Quieres añadir una foto de tu galería?", "Sí", "No");
         if (attachImg) await PickImageAsync();
         else _pendingImagePath = null;
 
-        var title = await Application.Current.MainPage.DisplayPromptAsync("Nueva Tarea", "Nombre:");
-        if (string.IsNullOrWhiteSpace(title)) return;
+        NewTaskTitle = "";
+        NewTaskRewardCoinsText = "10"; // <-- Texto
+        NewTaskDate = DateTime.Today;
+        NewTaskTime = DateTime.Now.AddHours(1).TimeOfDay;
 
-        var rewardText = await Application.Current.MainPage.DisplayPromptAsync("Recompensa", "¿Cuántas monedas da?", initialValue: "10");
-        if (string.IsNullOrWhiteSpace(rewardText) || !int.TryParse(rewardText, out var rewardCoins) || rewardCoins < 0) return;
+        IsCreatingTask = true;
+    }
 
-        var dateText = await Application.Current.MainPage.DisplayPromptAsync("Fecha límite", "Vencimiento (yyyy-MM-dd):", initialValue: DateTime.Today.ToString("yyyy-MM-dd"));
-        var timeText = await Application.Current.MainPage.DisplayPromptAsync("Hora límite", "Hora (HH:mm):", initialValue: DateTime.Now.AddHours(1).ToString("HH:mm"));
-
-        if (string.IsNullOrWhiteSpace(dateText) || string.IsNullOrWhiteSpace(timeText) ||
-            !DateTime.TryParseExact(dateText, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dueDate) ||
-            !TimeSpan.TryParseExact(timeText, "hh\\:mm", CultureInfo.InvariantCulture, out var dueTime)) return;
+    [RelayCommand]
+    private async Task SaveTaskAsync()
+    {
+        //AQUÍ ESTÁ LA VALIDACIÓN QUE GRITA
+        if (string.IsNullOrWhiteSpace(NewTaskTitle) ||
+            !int.TryParse(NewTaskRewardCoinsText, out int rewardCoins) || rewardCoins < 0)
+        {
+            await _soundService.PlayFailAsync();
+            await Application.Current.MainPage.DisplayAlert("Error", "Revisa el nombre y asegúrate de poner un número válido de monedas.", "OK");
+            return;
+        }
 
         var newTask = new TaskItem
         {
             UserId = _currentUserId,
-            Title = title.Trim(),
-            DueDateTime = dueDate.Date.Add(dueTime),
+            Title = NewTaskTitle.Trim(),
+            DueDateTime = NewTaskDate.Date.Add(NewTaskTime),
             RewardCoins = rewardCoins,
             IsCompleted = false,
             IsFailed = false,
@@ -367,7 +343,70 @@ public partial class MainViewModel : ObservableObject
         await _databaseService.SaveTaskAsync(newTask);
         Tasks.Add(newTask);
         await _soundService.PlayCreatedAsync();
+
         _pendingImagePath = null;
+        IsCreatingTask = false;
+    }
+
+    // --- HÁBITOS ---
+    [RelayCommand]
+    private async Task AddNewHabitAsync()
+    {
+        await _soundService.PlayClickAsync();
+        bool attachImg = await Application.Current.MainPage.DisplayAlert("Imagen", "¿Quieres añadir una foto de tu galería?", "Sí", "No");
+        if (attachImg) await PickImageAsync();
+        else _pendingImagePath = null;
+
+        NewHabitTitle = "";
+        NewHabitRewardCoinsText = "5"; // <-- Texto
+        NewHabitTime = DateTime.Now.AddHours(1).TimeOfDay;
+        NewHabitActiveDays = "1,2,3,4,5";
+
+        IsCreatingHabit = true;
+    }
+
+    [RelayCommand]
+    private async Task SaveHabitAsync()
+    {
+        //VALIDACIÓN DE MONEDAS
+        if (string.IsNullOrWhiteSpace(NewHabitTitle) ||
+            !int.TryParse(NewHabitRewardCoinsText, out int rewardCoins) || rewardCoins < 0)
+        {
+            await _soundService.PlayFailAsync();
+            await Application.Current.MainPage.DisplayAlert("Error", "Revisa el nombre y asegúrate de poner un número válido de monedas.", "OK");
+            return;
+        }
+
+        var dayTokens = (NewHabitActiveDays ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(x => int.TryParse(x, out var day) && day >= 0 && day <= 6)
+            .Select(int.Parse)
+            .Distinct()
+            .ToArray();
+
+        if (dayTokens.Length == 0)
+        {
+            await _soundService.PlayFailAsync();
+            await Application.Current.MainPage.DisplayAlert("Error", "Debes introducir al menos un día válido (del 0 al 6, separados por comas).", "OK");
+            return;
+        }
+
+        var newHabit = new HabitItem
+        {
+            UserId = _currentUserId,
+            Title = NewHabitTitle.Trim(),
+            ScheduledTime = NewHabitTime,
+            ActiveDaysCsv = string.Join(',', dayTokens),
+            RewardCoins = rewardCoins,
+            IsPositive = true,
+            ImagePath = _pendingImagePath
+        };
+
+        await _databaseService.SaveHabitAsync(newHabit);
+        Habits.Add(newHabit);
+        await _soundService.PlayCreatedAsync();
+
+        _pendingImagePath = null;
+        IsCreatingHabit = false;
     }
 
     [RelayCommand]
@@ -389,8 +428,18 @@ public partial class MainViewModel : ObservableObject
         var title = await Application.Current.MainPage.DisplayPromptAsync("Nueva Recompensa", "¿Qué capricho?");
         if (string.IsNullOrWhiteSpace(title)) return;
 
-        var costText = await Application.Current.MainPage.DisplayPromptAsync("Coste", "¿Cuántas monedas?");
-        if (string.IsNullOrWhiteSpace(costText) || !int.TryParse(costText, out var cost) || cost < 0) return;
+        // BUCLE: Coste
+        int cost = 0;
+        while (true)
+        {
+            var costText = await Application.Current.MainPage.DisplayPromptAsync("Coste", "¿Cuántas monedas?", keyboard: Keyboard.Numeric);
+            if (costText == null) return;
+
+            if (int.TryParse(costText, out cost) && cost >= 0) break;
+
+            await _soundService.PlayFailAsync();
+            await Application.Current.MainPage.DisplayAlert("Error", "Debes introducir un coste numérico válido (ej: 50).", "Reintentar");
+        }
 
         var newReward = new RewardItem { UserId = _currentUserId, Title = title.Trim(), Cost = cost, ImagePath = _pendingImagePath };
         await _databaseService.SaveRewardAsync(newReward);
@@ -442,7 +491,7 @@ public partial class MainViewModel : ObservableObject
         {
             await _soundService.PlayClickAsync();
 
-            // 🛡️ ESCUDO ACTIVADO: Si es de sistema, salimos de aquí sin hacer nada
+            // ESCUDO ACTIVADO: Si es de sistema, salimos de aquí sin hacer nada
             if (reward == null || reward.IsSystemReward) return;
 
             if (!await Application.Current.MainPage.DisplayAlert("Eliminar", "¿Borrar este capricho?", "Sí", "No")) return;
@@ -533,5 +582,21 @@ public partial class MainViewModel : ObservableObject
         }
         await _soundService.PlayFailAsync();
         await Application.Current.MainPage.DisplayAlert("Aviso", "No tienes suficientes monedas", "OK");
+    }
+
+    [RelayCommand]
+    private async Task CancelTaskAsync()
+    {
+        await _soundService.PlayClickAsync(); // <-- Añadimos el sonido para que sepas que te ha escuchado
+        IsCreatingTask = false; // <-- Esto es lo que oculta el cristal oscuro
+        _pendingImagePath = null;
+    }
+
+    [RelayCommand]
+    private async Task CancelHabitAsync()
+    {
+        await _soundService.PlayClickAsync(); // <-- Sonidito de confirmación
+        IsCreatingHabit = false; // <-- Oculta el formulario del hábito
+        _pendingImagePath = null;
     }
 }
