@@ -11,51 +11,47 @@
         </LinearGradientBrush>
     </ContentPage.Background>
 
-    <VerticalStackLayout VerticalOptions="Center" Spacing="30" Padding="30">
+    <Grid>
 
-        <Label Text="✨ FOCUSFLOW" 
-               FontSize="36" 
-               FontAttributes="Bold" 
-               TextColor="{StaticResource AeroGlow}" 
-               HorizontalOptions="Center" 
-               CharacterSpacing="4"/>
+        <VerticalStackLayout VerticalOptions="Center" Spacing="30" Padding="30">
 
-        <Label Text="Gamifica tu productividad" 
-               TextColor="{StaticResource AeroPanelLight}" 
-               HorizontalOptions="Center" 
-               FontSize="16" 
-               Margin="0,-20,0,0"/>
-
-        <Border Style="{StaticResource AeroGlassCard}" Padding="20">
-            <VerticalStackLayout Spacing="20">
-
-                <Border Style="{StaticResource AeroCardSoft}" Padding="10,0">
-                    <Entry x:Name="UsernameEntry" 
-                           Placeholder="👤 Nombre de héroe" 
-                           TextColor="White" 
-                           PlaceholderColor="{StaticResource AeroSubText}"
-                           FontSize="16"/>
-                </Border>
-
-                <Border Style="{StaticResource AeroCardSoft}" Padding="10,0">
-                    <Entry x:Name="PasswordEntry" 
-                           Placeholder="🔑 Contraseña secreta" 
-                           IsPassword="True" 
-                           TextColor="White" 
-                           PlaceholderColor="{StaticResource AeroSubText}"
-                           FontSize="16"/>
-                </Border>
-
-                <Button Text="ENTRAR AL JUEGO" 
-                        Clicked="OnLoginClicked" 
-                        Style="{StaticResource AeroActionButton}" 
-                        Margin="0,10,0,0"/>
-
-                <Button Text="CREAR NUEVA CUENTA" 
-                        Clicked="OnRegisterClicked" 
-                        Style="{StaticResource AeroGhostButton}" />
-
+            <VerticalStackLayout Spacing="0">
+                <Label Text="✨ FOCUSFLOW" FontSize="36" FontAttributes="Bold" TextColor="{StaticResource AeroGlow}" HorizontalOptions="Center" CharacterSpacing="4"/>
+                <Label Text="Gamifica tu productividad" TextColor="White" FontAttributes="Bold" HorizontalOptions="Center" FontSize="16" />
             </VerticalStackLayout>
-        </Border>
-    </VerticalStackLayout>
+
+            <Border Style="{StaticResource AeroGlassCard}" Padding="20">
+                <VerticalStackLayout Spacing="20">
+                    <Border Style="{StaticResource AeroCardSoft}" Padding="10,0">
+                        <Entry x:Name="UsernameEntry" Placeholder="👤 Nombre de héroe" TextColor="White" PlaceholderColor="{StaticResource AeroSubText}" FontSize="16"/>
+                    </Border>
+                    <Border Style="{StaticResource AeroCardSoft}" Padding="10,0">
+                        <Entry x:Name="PasswordEntry" Placeholder="🔑 Contraseña secreta" IsPassword="True" TextColor="White" PlaceholderColor="{StaticResource AeroSubText}" FontSize="16"/>
+                    </Border>
+
+                    <Button Text="ENTRAR AL JUEGO" Clicked="OnLoginClicked" Style="{StaticResource AeroActionButton}" Margin="0,10,0,0"/>
+                    <Button Text="CREAR NUEVA CUENTA" Clicked="OnRegisterClicked" Style="{StaticResource AeroGhostButton}" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+
+        <Label Text="Una aplicación de Guillermo García López y Rodrigo García López" 
+               TextColor="{StaticResource AeroSky}" 
+               FontSize="12" 
+               HorizontalOptions="Center" 
+               VerticalOptions="End" 
+               Margin="0,0,0,20" />
+
+        <Grid x:Name="AlertOverlay" IsVisible="False" BackgroundColor="#D9000000" Padding="30">
+            <Border Style="{StaticResource AeroGlassCard}" VerticalOptions="Center" Padding="30" BackgroundColor="#1A2E40" Stroke="{StaticResource AeroSkyDeep}" StrokeThickness="2">
+                <VerticalStackLayout Spacing="20">
+                    <Label x:Name="AlertTitleLabel" Style="{StaticResource AeroSectionTitle}" HorizontalOptions="Center" FontSize="22" TextColor="{StaticResource AeroGlow}" />
+                    <Label x:Name="AlertMessageLabel" TextColor="White" FontSize="16" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+
+                    <Button Text="ENTENDIDO" Clicked="OnCloseAlertClicked" Style="{StaticResource AeroActionButton}" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+    </Grid>
 </ContentPage>

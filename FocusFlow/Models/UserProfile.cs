@@ -6,19 +6,19 @@ namespace FocusFlow.Models
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
-
         public int UserId { get; set; }
+        public int Level { get; set; }
+        public int CurrentXP { get; set; }
+        public int Coins { get; set; }
+        public int Health { get; set; }
+        public int MaxHealth { get; set; }
+        public DateTime LastLoginDate { get; set; }
 
-        public int Level { get; set; } = 1;
-
-        public int CurrentXP { get; set; } = 0;
-
-        public int Coins { get; set; } = 0;
-
-        public int Health { get; set; } = 50;
-
-        public int MaxHealth { get; set; } = 50;
-
-        public DateTime LastLoginDate { get; set; } = DateTime.Today;
+        // 📊 NUESTRO DIARIO DE ESTADÍSTICAS SECRETAS
+        public int TotalCoinsEarned { get; set; }
+        public int TotalRewardsBought { get; set; }
+        public int TotalTasksCompleted { get; set; }
+        public int TimesDied { get; set; }
+        public bool UsedHealReward { get; set; }
     }
 }

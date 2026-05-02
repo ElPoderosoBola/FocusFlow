@@ -14,8 +14,8 @@ public class DatabaseService
             return;
         }
 
-        // 🌟 ¡AQUÍ ESTÁ LA MAGIA! Le cambiamos el nombre a v2 para que empiece limpio
-        var databasePath = Path.Combine(FileSystem.AppDataDirectory, "focusflow_v2.db3");
+        // 🌟 ¡AQUÍ ESTÁ LA MAGIA! Le cambiamos el nombre a v3 para que empiece limpio
+        var databasePath = Path.Combine(FileSystem.AppDataDirectory, "focusflow_v3.db3");
 
         _database = new SQLiteAsyncConnection(databasePath);
         await _database.CreateTableAsync<TaskItem>();
@@ -192,7 +192,7 @@ public class DatabaseService
                 UserId = userId,
                 Title = "Curación de Salud",
                 Cost = 25,
-                ImagePath = string.Empty,
+                ImagePath = "heal.png",
                 IsSystemReward = true,
                 HealthRestore = 10
             };
@@ -316,15 +316,22 @@ public class DatabaseService
 
             if (hasHealthReward is not null)
             {
+                // 🪄 TRUCO DE MAGIA: Si la poción vieja no tiene foto, se la ponemos
+                if (string.IsNullOrEmpty(hasHealthReward.ImagePath))
+                {
+                    hasHealthReward.ImagePath = "heal.png";
+                    await _database.UpdateAsync(hasHealthReward);
+                }
                 continue;
             }
 
+            // Si es un usuario nuevo, le creamos la poción con la foto desde el principio
             var healthReward = new RewardItem
             {
                 UserId = user.Id,
                 Title = "Curación de Salud",
                 Cost = 25,
-                ImagePath = string.Empty,
+                ImagePath = "heal.png", // <-- ¡Aquí conectamos tu imagen!
                 IsSystemReward = true,
                 HealthRestore = 10
             };
@@ -333,7 +340,7 @@ public class DatabaseService
         }
     }
 
-    // Inserta logros iniciales si aún no hay ninguno.
+    // ¡AQUÍ ESTÁ LA HABITACIÓN QUE SE HABÍA BORRADO!
     private async Task SeedAchievementsAsync()
     {
         if (_database is null)
@@ -351,24 +358,19 @@ public class DatabaseService
 
         var defaultAchievements = new List<AchievementItem>
         {
-            new AchievementItem
-            {
-                Title = "Primeros Pasos",
-                Description = "Completa tu primera misión diaria.",
-                IsUnlocked = false
-            },
-            new AchievementItem
-            {
-                Title = "Aprendiz",
-                Description = "Alcanza el Nivel 2.",
-                IsUnlocked = false
-            },
-            new AchievementItem
-            {
-                Title = "Acaparador",
-                Description = "Consigue 50 monedas.",
-                IsUnlocked = false
-            }
+            new AchievementItem { Title = "Primeros Pasos", Description = "Completa tu primera misión diaria.", IsUnlocked = false },
+            new AchievementItem { Title = "Aprendiz", Description = "Alcanza el Nivel 2.", IsUnlocked = false },
+            new AchievementItem { Title = "Acaparador", Description = "Consigue 50 monedas.", IsUnlocked = false },
+            
+            // ¡LOS 8 NUEVOS!
+            new AchievementItem { Title = "Atiza como cotiza", Description = "Gana más de 5000 monedas a lo largo de tu vida.", IsUnlocked = false },
+            new AchievementItem { Title = "El lobo de FocusFlow Street", Description = "Ten 3000 monedas almacenadas en tu cartera.", IsUnlocked = false },
+            new AchievementItem { Title = "Paracetamol y a correr", Description = "Usa la recompensa de curar al menos una vez.", IsUnlocked = false },
+            new AchievementItem { Title = "Y resucitó al tercer día...", Description = "Cae en batalla (Salud a 0) al menos una vez.", IsUnlocked = false },
+            new AchievementItem { Title = "John Multitasking", Description = "Ten al menos 5 hábitos en tu lista.", IsUnlocked = false },
+            new AchievementItem { Title = "Quien bien trabaja, bien descansa", Description = "Compra 5 recompensas en la tienda.", IsUnlocked = false },
+            new AchievementItem { Title = "Ni en Silicon Valley", Description = "Compra 50 recompensas en la tienda.", IsUnlocked = false },
+            new AchievementItem { Title = "Autónomo rutinal", Description = "Completa 30 misiones en total.", IsUnlocked = false }
         };
 
         await _database.InsertAllAsync(defaultAchievements);

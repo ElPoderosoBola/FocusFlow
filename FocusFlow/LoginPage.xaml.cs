@@ -8,6 +8,9 @@ public partial class LoginPage : ContentPage
     private readonly DatabaseService _databaseService;
     private readonly SoundService _soundService;
 
+    // El "cronómetro" secreto para que el código espere a que pulses "ENTENDIDO"
+    private TaskCompletionSource<bool> _alertTcs;
+
     public LoginPage(DatabaseService databaseService, SoundService soundService)
     {
         InitializeComponent();
@@ -15,15 +18,34 @@ public partial class LoginPage : ContentPage
         _soundService = soundService;
     }
 
+    // --- NUESTRO CREADOR DE HOLOGRAMAS ---
+    private async Task ShowAeroAlert(string title, string message)
+    {
+        AlertTitleLabel.Text = title;
+        AlertMessageLabel.Text = message;
+        AlertOverlay.IsVisible = true;
+
+        _alertTcs = new TaskCompletionSource<bool>();
+        await _alertTcs.Task; // El código se pausa aquí hasta que se pulse el botón
+    }
+
+    private async void OnCloseAlertClicked(object sender, EventArgs e)
+    {
+        await _soundService.PlayClickAsync();
+        AlertOverlay.IsVisible = false; // Escondemos el cristal
+        _alertTcs?.TrySetResult(true);  // Le decimos al código: "¡Ya puedes continuar!"
+    }
+    // ------------------------------------
+
     private async void OnLoginClicked(object sender, EventArgs e)
     {
-
         string username = UsernameEntry.Text?.Trim();
         string password = PasswordEntry.Text?.Trim();
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            await DisplayAlert("Aviso", "¡Necesitas tu nombre y contraseña para entrar!", "OK");
+            await _soundService.PlayFailAsync();
+            await ShowAeroAlert("Aviso", "¡Necesitas tu nombre y contraseña para entrar!");
             return;
         }
 
@@ -35,26 +57,25 @@ public partial class LoginPage : ContentPage
             session.CurrentUserId = user.Id;
             await _databaseService.SaveUserSessionAsync(session);
 
-            await _soundService.PlayLoginAsync(); // <-- ¡Suena Chimes.mp3 al logearse!
-
+            await _soundService.PlayLoginAsync();
             Application.Current.Windows[0].Page = new AppShell();
         }
         else
         {
             await _soundService.PlayFailAsync();
-            await DisplayAlert("Error", "El nombre o la contraseña no coinciden.", "Vaya...");
+            await ShowAeroAlert("Error", "El nombre o la contraseña no coinciden.");
         }
     }
 
     private async void OnRegisterClicked(object sender, EventArgs e)
     {
-
         string username = UsernameEntry.Text?.Trim();
         string password = PasswordEntry.Text?.Trim();
 
         if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
         {
-            await DisplayAlert("Aviso", "Escribe un nombre y contraseña para registrarte.", "OK");
+            await _soundService.PlayFailAsync();
+            await ShowAeroAlert("Aviso", "Escribe un nombre y contraseña para registrarte.");
             return;
         }
 
@@ -63,13 +84,13 @@ public partial class LoginPage : ContentPage
 
         if (success)
         {
-            await _soundService.PlayCreatedAsync(); // <-- Suena SonidoNormal.mp3
-            await DisplayAlert("¡Bienvenido!", "Tu cuenta ha sido creada. Ahora dale a ENTRAR.", "¡Genial!");
+            await _soundService.PlayCreatedAsync();
+            await ShowAeroAlert("¡Bienvenido!", "Tu cuenta ha sido creada.\nAhora dale a ENTRAR AL JUEGO.");
         }
         else
         {
             await _soundService.PlayFailAsync();
-            await DisplayAlert("Error", "Ese nombre de héroe ya está pillado. Elige otro.", "OK");
+            await ShowAeroAlert("Error", "Ese nombre de héroe ya está pillado. Elige otro.");
         }
     }
 }
