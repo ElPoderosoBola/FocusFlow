@@ -36,11 +36,12 @@
         </VerticalStackLayout>
 
         <Label Text="Una aplicación de Guillermo García López y Rodrigo García López" 
-               TextColor="{StaticResource AeroSky}" 
-               FontSize="12" 
-               HorizontalOptions="Center" 
-               VerticalOptions="End" 
-               Margin="0,0,0,20" />
+       TextColor="{StaticResource AeroSky}" 
+       FontSize="12" 
+       HorizontalOptions="Center" 
+       HorizontalTextAlignment="Center" 
+       VerticalOptions="End" 
+       Margin="0,0,0,20" />
 
         <Grid x:Name="AlertOverlay" IsVisible="False" BackgroundColor="#D9000000" Padding="30">
             <Border Style="{StaticResource AeroGlassCard}" VerticalOptions="Center" Padding="30" BackgroundColor="#1A2E40" Stroke="{StaticResource AeroSkyDeep}" StrokeThickness="2">

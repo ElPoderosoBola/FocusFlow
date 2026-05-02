@@ -22,11 +22,11 @@
                         <Label Grid.Row="0" Grid.ColumnSpan="2" Text="✨ FOCUSFLOW" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource AeroGlow}" CharacterSpacing="3" HorizontalOptions="Center" Margin="0,0,0,15" />
 
                         <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="5">
-                            <HorizontalStackLayout Spacing="5">
-                                <Label Text="❤️ Salud:" TextColor="{StaticResource AeroPanelLight}" FontSize="15" FontAttributes="Bold"/>
-                                <Label Text="{Binding CurrentUserProfile.Health}" TextColor="White" FontAttributes="Bold" FontSize="16"/>
-                                <Label Text="/" TextColor="{StaticResource AeroSubText}" FontSize="15"/>
-                                <Label Text="{Binding CurrentUserProfile.MaxHealth}" TextColor="{StaticResource AeroSubText}" FontSize="15"/>
+                            <HorizontalStackLayout Spacing="3">
+                                <Label Text="❤️" FontSize="18" VerticalOptions="Center"/>
+                                <Label Text="{Binding CurrentUserProfile.Health}" TextColor="White" FontAttributes="Bold" FontSize="16" VerticalOptions="Center"/>
+                                <Label Text="/" TextColor="{StaticResource AeroSubText}" FontSize="15" VerticalOptions="Center"/>
+                                <Label Text="{Binding CurrentUserProfile.MaxHealth}" TextColor="{StaticResource AeroSubText}" FontSize="15" VerticalOptions="Center"/>
                             </HorizontalStackLayout>
                             <HorizontalStackLayout Spacing="5">
                                 <Label Text="🌟 Exp:" TextColor="{StaticResource AeroGold}" FontSize="15" FontAttributes="Bold"/>
@@ -65,9 +65,7 @@
                                             <Image Source="{Binding ImagePath}" Aspect="AspectFill" />
                                         </Border>
                                         <Label Grid.Column="1" Text="🔄" FontSize="18" VerticalOptions="Center" />
-
                                         <Label Grid.Column="2" Text="{Binding Title}" VerticalOptions="Center" TextColor="{StaticResource AeroText}" FontSize="15" FontAttributes="Bold" LineBreakMode="WordWrap" />
-
                                         <Button Grid.Column="3" Text="🗑️" BackgroundColor="Transparent" TextColor="{StaticResource AeroRed}" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DeleteHabitCommand}" CommandParameter="{Binding .}" />
                                         <Button Grid.Column="4" Text="OK" BackgroundColor="{StaticResource AeroLime}" TextColor="#162533" CornerRadius="10" Padding="10,0" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=ExecuteHabitCommand}" CommandParameter="{Binding .}" />
                                     </Grid>
@@ -189,32 +187,36 @@
                         <HorizontalStackLayout BindableLayout.ItemsSource="{Binding WeekDays}" Spacing="5" HorizontalOptions="Center">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="models:DayBubble">
-                                    <Border WidthRequest="36" HeightRequest="36" StrokeShape="RoundRectangle 18" Stroke="Transparent">
+                                    <Border WidthRequest="36" HeightRequest="36" StrokeShape="RoundRectangle 18" Stroke="Transparent" Padding="0">
                                         <Border.GestureRecognizers>
                                             <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=ToggleDayCommand}" CommandParameter="{Binding .}"/>
                                         </Border.GestureRecognizers>
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="BackgroundColor" Value="{StaticResource AeroCardSoft}" />
-                                                <Style.Triggers>
-                                                    <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
-                                                        <Setter Property="BackgroundColor" Value="{StaticResource AeroLime}" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <Label Text="{Binding Name}" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" FontSize="14">
-                                            <Label.Style>
-                                                <Style TargetType="Label">
-                                                    <Setter Property="TextColor" Value="{StaticResource AeroSubText}" />
+
+                                        <Grid>
+                                            <Grid.Style>
+                                                <Style TargetType="Grid">
+                                                    <Setter Property="BackgroundColor" Value="{StaticResource AeroCardSoft}" />
                                                     <Style.Triggers>
-                                                        <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
-                                                            <Setter Property="TextColor" Value="#162533" />
+                                                        <DataTrigger TargetType="Grid" Binding="{Binding IsSelected}" Value="True">
+                                                            <Setter Property="BackgroundColor" Value="{StaticResource AeroLime}" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
-                                            </Label.Style>
-                                        </Label>
+                                            </Grid.Style>
+
+                                            <Label Text="{Binding Name}" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" FontSize="14">
+                                                <Label.Style>
+                                                    <Style TargetType="Label">
+                                                        <Setter Property="TextColor" Value="{StaticResource AeroSubText}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                                <Setter Property="TextColor" Value="#162533" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Label.Style>
+                                            </Label>
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
                             </BindableLayout.ItemTemplate>
