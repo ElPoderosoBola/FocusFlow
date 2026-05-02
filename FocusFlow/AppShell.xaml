@@ -4,7 +4,15 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:FocusFlow"
-    Title="FocusFlow">
+    Title="FocusFlow"
+    Shell.BackgroundColor="#162533" 
+    Shell.ForegroundColor="White"
+    Shell.TitleColor="White"
+    Shell.UnselectedColor="#8CA5B8"
+    Shell.TabBarBackgroundColor="#162533"
+    Shell.TabBarForegroundColor="White"
+    Shell.TabBarTitleColor="White"
+    Shell.TabBarUnselectedColor="#8CA5B8">
 
     <TabBar>
         <Tab Title="Misiones">

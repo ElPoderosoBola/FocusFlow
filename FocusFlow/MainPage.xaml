@@ -15,188 +15,181 @@
 
     <Grid>
         <ScrollView>
-            <VerticalStackLayout Spacing="25" Padding="0,0,0,40">
+            <VerticalStackLayout Spacing="20" Padding="0,0,0,40">
 
-                <Border Style="{StaticResource AeroGlassCard}" Margin="20,25,20,0" Padding="0">
-                    <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto, Auto" Padding="25" BackgroundColor="Transparent">
-                        <Label Grid.Row="0" Grid.ColumnSpan="2" Text="✨ FOCUSFLOW" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource AeroGlow}" CharacterSpacing="3" HorizontalOptions="Center" />
-                        <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="8" Margin="0,15,0,0">
+                <Border Style="{StaticResource AeroGlassCard}" Margin="15,20,15,0" Padding="20">
+                    <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto" BackgroundColor="Transparent">
+                        <Label Grid.Row="0" Grid.ColumnSpan="2" Text="✨ FOCUSFLOW" FontSize="14" FontAttributes="Bold" TextColor="{StaticResource AeroGlow}" CharacterSpacing="3" HorizontalOptions="Center" Margin="0,0,0,15" />
+
+                        <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="5">
                             <HorizontalStackLayout Spacing="5">
-                                <Label Text="❤️ Salud:" TextColor="{StaticResource AeroPanelLight}" FontSize="16" FontAttributes="Bold" VerticalOptions="Center"/>
-                                <Label Text="{Binding CurrentUserProfile.Health}" TextColor="White" FontAttributes="Bold" FontSize="18"/>
-                                <Label Text="/" TextColor="{StaticResource AeroSubText}" FontSize="16" VerticalOptions="Center"/>
-                                <Label Text="{Binding CurrentUserProfile.MaxHealth}" TextColor="{StaticResource AeroSubText}" FontSize="16" VerticalOptions="Center"/>
+                                <Label Text="❤️ Salud:" TextColor="{StaticResource AeroPanelLight}" FontSize="15" FontAttributes="Bold"/>
+                                <Label Text="{Binding CurrentUserProfile.Health}" TextColor="White" FontAttributes="Bold" FontSize="16"/>
+                                <Label Text="/" TextColor="{StaticResource AeroSubText}" FontSize="15"/>
+                                <Label Text="{Binding CurrentUserProfile.MaxHealth}" TextColor="{StaticResource AeroSubText}" FontSize="15"/>
                             </HorizontalStackLayout>
                             <HorizontalStackLayout Spacing="5">
-                                <Label Text="🌟 Exp:" TextColor="{StaticResource AeroGold}" FontSize="16" FontAttributes="Bold" VerticalOptions="Center"/>
-                                <Label Text="{Binding CurrentUserProfile.CurrentXP, StringFormat='{0} XP'}" TextColor="White" FontAttributes="Bold" FontSize="16"/>
+                                <Label Text="🌟 Exp:" TextColor="{StaticResource AeroGold}" FontSize="15" FontAttributes="Bold"/>
+                                <Label Text="{Binding CurrentUserProfile.CurrentXP, StringFormat='{0} XP'}" TextColor="White" FontAttributes="Bold" FontSize="15"/>
                             </HorizontalStackLayout>
                         </VerticalStackLayout>
-                        <VerticalStackLayout Grid.Row="1" Grid.Column="1" HorizontalOptions="End" VerticalOptions="Center" Margin="0,15,0,0">
+
+                        <VerticalStackLayout Grid.Row="1" Grid.Column="1" HorizontalOptions="End">
                             <HorizontalStackLayout Spacing="5" HorizontalOptions="End">
-                                <Label Text="Nivel" TextColor="{StaticResource AeroSubText}" FontSize="16" VerticalOptions="End" Margin="0,0,0,4"/>
-                                <Label Text="{Binding CurrentUserProfile.Level}" TextColor="White" FontSize="32" FontAttributes="Bold" VerticalOptions="End"/>
+                                <Label Text="Nivel" TextColor="{StaticResource AeroSubText}" FontSize="14" VerticalOptions="End"/>
+                                <Label Text="{Binding CurrentUserProfile.Level}" TextColor="White" FontSize="26" FontAttributes="Bold"/>
                             </HorizontalStackLayout>
                             <HorizontalStackLayout Spacing="5" HorizontalOptions="End">
-                                <Label Text="💰" FontSize="16" VerticalOptions="Center"/>
-                                <Label Text="{Binding CurrentUserProfile.Coins}" TextColor="{StaticResource AeroGold}" FontSize="20" FontAttributes="Bold"/>
+                                <Label Text="💰" FontSize="14"/>
+                                <Label Text="{Binding CurrentUserProfile.Coins}" TextColor="{StaticResource AeroGold}" FontSize="18" FontAttributes="Bold"/>
                             </HorizontalStackLayout>
                         </VerticalStackLayout>
                     </Grid>
                 </Border>
 
-                <VerticalStackLayout Spacing="15" Padding="20,0">
-                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
-                        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                            <Label Text="🌿" FontSize="24" VerticalOptions="Center" />
+                <VerticalStackLayout Spacing="10" Padding="15,0">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="🌿" FontSize="22" />
                             <Label Text="HÁBITOS" Style="{StaticResource AeroSectionTitle}" />
                         </HorizontalStackLayout>
-                        <Button Grid.Column="1" Text="+" Command="{Binding AddNewHabitCommand}" Style="{StaticResource AeroActionButton}" WidthRequest="50" HeightRequest="50" CornerRadius="25" FontSize="24" />
+                        <Button Grid.Column="1" Text="+" Command="{Binding AddNewHabitCommand}" Style="{StaticResource AeroActionButton}" WidthRequest="45" HeightRequest="45" CornerRadius="22" />
                     </Grid>
-                    <CollectionView ItemsSource="{Binding Habits}">
-                        <CollectionView.ItemTemplate>
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Habits}" Spacing="10">
+                        <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="models:HabitItem">
-                                <Border Style="{StaticResource AeroCardSoft}" Margin="0,0,0,12">
-                                    <Grid ColumnDefinitions="Auto, Auto, *, Auto, Auto" Padding="15" ColumnSpacing="10">
-                                        <Border Grid.Column="0" WidthRequest="45" HeightRequest="45" StrokeShape="RoundRectangle 10" Stroke="Transparent" VerticalOptions="Center">
+                                <Border Style="{StaticResource AeroCardSoft}">
+                                    <Grid ColumnDefinitions="Auto, Auto, *, Auto, Auto" Padding="12" ColumnSpacing="8">
+                                        <Border Grid.Column="0" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 10" Stroke="Transparent">
                                             <Image Source="{Binding ImagePath}" Aspect="AspectFill" />
-                                            <Border.Triggers>
-                                                <DataTrigger TargetType="Border" Binding="{Binding ImagePath}" Value="{x:Null}">
-                                                    <Setter Property="IsVisible" Value="False" />
-                                                </DataTrigger>
-                                            </Border.Triggers>
                                         </Border>
-                                        <Label Grid.Column="1" Text="🔄" FontSize="20" VerticalOptions="Center" />
-                                        <Label Grid.Column="2" Text="{Binding Title}" VerticalOptions="Center" TextColor="{StaticResource AeroText}" FontSize="18" FontAttributes="Bold" />
-                                        <Button Grid.Column="3" Text="🗑️" BackgroundColor="Transparent" TextColor="{StaticResource AeroRed}" FontSize="20" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DeleteHabitCommand}" CommandParameter="{Binding .}" />
-                                        <Button Grid.Column="4" Text="¡HECHO!" BackgroundColor="{StaticResource AeroLime}" TextColor="#162533" CornerRadius="12" FontAttributes="Bold" Padding="15,0" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=ExecuteHabitCommand}" CommandParameter="{Binding .}" />
+                                        <Label Grid.Column="1" Text="🔄" FontSize="18" VerticalOptions="Center" />
+
+                                        <Label Grid.Column="2" Text="{Binding Title}" VerticalOptions="Center" TextColor="{StaticResource AeroText}" FontSize="15" FontAttributes="Bold" LineBreakMode="WordWrap" />
+
+                                        <Button Grid.Column="3" Text="🗑️" BackgroundColor="Transparent" TextColor="{StaticResource AeroRed}" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DeleteHabitCommand}" CommandParameter="{Binding .}" />
+                                        <Button Grid.Column="4" Text="OK" BackgroundColor="{StaticResource AeroLime}" TextColor="#162533" CornerRadius="10" Padding="10,0" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=ExecuteHabitCommand}" CommandParameter="{Binding .}" />
                                     </Grid>
                                 </Border>
                             </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
                 </VerticalStackLayout>
 
-                <VerticalStackLayout Spacing="15" Padding="20,0">
-                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
-                        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                            <Label Text="🗡️" FontSize="24" VerticalOptions="Center" />
+                <VerticalStackLayout Spacing="10" Padding="15,0">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="🗡️" FontSize="22" />
                             <Label Text="MISIONES" Style="{StaticResource AeroSectionTitle}" />
                         </HorizontalStackLayout>
-                        <Button Grid.Column="1" Text="+" Command="{Binding AddNewTaskCommand}" Style="{StaticResource AeroActionButton}" WidthRequest="50" HeightRequest="50" CornerRadius="25" FontSize="24" />
+                        <Button Grid.Column="1" Text="+" Command="{Binding AddNewTaskCommand}" Style="{StaticResource AeroActionButton}" WidthRequest="45" HeightRequest="45" CornerRadius="22" />
                     </Grid>
-                    <CollectionView ItemsSource="{Binding Tasks}">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:TaskItem">
-                                <Border Style="{StaticResource AeroCardSoft}" Margin="0,0,0,12">
-                                    <Grid ColumnDefinitions="Auto, *, Auto, Auto" Padding="15" ColumnSpacing="10">
-                                        <Border Grid.Column="0" WidthRequest="50" HeightRequest="50" StrokeShape="RoundRectangle 10" Stroke="Transparent" VerticalOptions="Center">
-                                            <Image Source="{Binding ImagePath}" Aspect="AspectFill" />
-                                            <Border.Triggers>
-                                                <DataTrigger TargetType="Border" Binding="{Binding ImagePath}" Value="{x:Null}">
-                                                    <Setter Property="IsVisible" Value="False" />
-                                                </DataTrigger>
-                                            </Border.Triggers>
-                                        </Border>
-                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                                            <Label Text="{Binding Title}" TextColor="{StaticResource AeroText}" FontSize="18" FontAttributes="Bold" />
-                                            <Label Text="{Binding DueDateTime, StringFormat='⏰ Límite: {0:dd/MM HH:mm}'}" TextColor="{StaticResource AeroSkyNight}" FontSize="13" />
-                                            <Label Text="{Binding RewardCoins, StringFormat='🪙 Recompensa: {0}'}" TextColor="{StaticResource AeroText}" FontSize="13" FontAttributes="Bold" />
-                                        </VerticalStackLayout>
-                                        <Button Grid.Column="2" Text="🗑️" BackgroundColor="Transparent" TextColor="{StaticResource AeroRed}" FontSize="20" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DeleteTaskCommand}" CommandParameter="{Binding .}" Margin="0,0,10,0" />
-                                        <Button Grid.Column="3" Text="COMPLETAR" BackgroundColor="{StaticResource AeroSkyDeep}" TextColor="White" CornerRadius="12" FontAttributes="Bold" Padding="15,0" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=CompleteTaskCommand}" CommandParameter="{Binding .}" />
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
-                </VerticalStackLayout>
 
-                <VerticalStackLayout Spacing="15" Padding="20,0">
-                    <Grid ColumnDefinitions="*, Auto" VerticalOptions="Center">
-                        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
-                            <Label Text="🧪" FontSize="24" VerticalOptions="Center" />
-                            <Label Text="TIENDA" Style="{StaticResource AeroSectionTitle}" />
-                        </HorizontalStackLayout>
-                        <Button Grid.Column="1" Text="+" Command="{Binding AddNewRewardCommand}" Style="{StaticResource AeroActionButton}" WidthRequest="50" HeightRequest="50" CornerRadius="25" FontSize="24" />
-                    </Grid>
-                    <CollectionView ItemsSource="{Binding Rewards}">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="models:RewardItem">
-                                <Border Style="{StaticResource AeroCardSoft}" Margin="0,0,0,12">
-                                    <Grid ColumnDefinitions="Auto, *, Auto, Auto" Padding="15" ColumnSpacing="10">
-                                        <Border Grid.Column="0" WidthRequest="45" HeightRequest="45" StrokeShape="RoundRectangle 10" Stroke="Transparent" VerticalOptions="Center">
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Tasks}" Spacing="10">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:TaskItem">
+                                <Border Style="{StaticResource AeroCardSoft}">
+                                    <Grid ColumnDefinitions="Auto, *, Auto, Auto" Padding="12" ColumnSpacing="8">
+                                        <Border Grid.Column="0" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 10" Stroke="Transparent">
                                             <Image Source="{Binding ImagePath}" Aspect="AspectFill" />
-                                            <Border.Triggers>
-                                                <DataTrigger TargetType="Border" Binding="{Binding ImagePath}" Value="{x:Null}">
-                                                    <Setter Property="IsVisible" Value="False" />
-                                                </DataTrigger>
-                                            </Border.Triggers>
                                         </Border>
                                         <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
-                                            <Label Text="{Binding Title}" TextColor="{StaticResource AeroText}" FontSize="18" FontAttributes="Bold" />
-                                            <Label Text="{Binding Cost, StringFormat='💰 {0} Monedas'}" TextColor="{StaticResource AeroSkyNight}" FontAttributes="Bold" FontSize="14" />
+                                            <Label Text="{Binding Title}" TextColor="{StaticResource AeroText}" FontSize="15" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                                            <Label Text="{Binding DueDateTime, StringFormat='⏰ {0:dd/MM HH:mm}'}" TextColor="{StaticResource AeroSkyNight}" FontSize="11" />
                                         </VerticalStackLayout>
-                                        <Button Grid.Column="2" Text="🗑️" BackgroundColor="Transparent" TextColor="{StaticResource AeroRed}" FontSize="20" Margin="0,0,10,0" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DeleteRewardCommand}" CommandParameter="{Binding .}" />
-                                        <Button Grid.Column="3" Text="COMPRAR" BackgroundColor="{StaticResource AeroGold}" TextColor="#162533" CornerRadius="12" FontAttributes="Bold" Padding="15,0" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=BuyRewardCommand}" CommandParameter="{Binding .}" />
+                                        <Button Grid.Column="2" Text="🗑️" BackgroundColor="Transparent" TextColor="{StaticResource AeroRed}" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DeleteTaskCommand}" CommandParameter="{Binding .}" />
+                                        <Button Grid.Column="3" Text="LISTO" BackgroundColor="{StaticResource AeroSkyDeep}" TextColor="White" CornerRadius="10" Padding="10,0" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=CompleteTaskCommand}" CommandParameter="{Binding .}" />
                                     </Grid>
                                 </Border>
                             </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
                 </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="10" Padding="15,0">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <HorizontalStackLayout Spacing="10">
+                            <Label Text="🧪" FontSize="22" />
+                            <Label Text="TIENDA" Style="{StaticResource AeroSectionTitle}" />
+                        </HorizontalStackLayout>
+                        <Button Grid.Column="1" Text="+" Command="{Binding AddNewRewardCommand}" Style="{StaticResource AeroActionButton}" WidthRequest="45" HeightRequest="45" CornerRadius="22" />
+                    </Grid>
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Rewards}" Spacing="10">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="models:RewardItem">
+                                <Border Style="{StaticResource AeroCardSoft}">
+                                    <Grid ColumnDefinitions="Auto, *, Auto, Auto" Padding="12" ColumnSpacing="8">
+                                        <Border Grid.Column="0" WidthRequest="40" HeightRequest="40" StrokeShape="RoundRectangle 10" Stroke="Transparent">
+                                            <Image Source="{Binding ImagePath}" Aspect="AspectFill" />
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                            <Label Text="{Binding Title}" TextColor="{StaticResource AeroText}" FontSize="15" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                                            <Label Text="{Binding Cost, StringFormat='💰 {0}'}" TextColor="{StaticResource AeroSkyNight}" FontSize="12" />
+                                        </VerticalStackLayout>
+                                        <Button Grid.Column="2" Text="🗑️" BackgroundColor="Transparent" TextColor="{StaticResource AeroRed}" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=DeleteRewardCommand}" CommandParameter="{Binding .}" />
+                                        <Button Grid.Column="3" Text="COMPRAR" BackgroundColor="{StaticResource AeroGold}" TextColor="#162533" CornerRadius="10" Padding="10,0" Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=BuyRewardCommand}" CommandParameter="{Binding .}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+
             </VerticalStackLayout>
         </ScrollView>
 
         <Grid IsVisible="{Binding IsCreatingTask}" BackgroundColor="#D9000000" Padding="20">
-            <Border Style="{StaticResource AeroGlassCard}" VerticalOptions="Center" Padding="25" BackgroundColor="#1E2A33">
-                <VerticalStackLayout Spacing="15">
-                    <Label Text="NUEVA MISIÓN" Style="{StaticResource AeroSectionTitle}" HorizontalOptions="Center" FontSize="20" />
+            <Border Style="{StaticResource AeroGlassCard}" VerticalOptions="Center" Padding="20" BackgroundColor="#1E2A33">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="NUEVA MISIÓN" Style="{StaticResource AeroSectionTitle}" HorizontalOptions="Center" FontSize="18" />
                     <Border Style="{StaticResource AeroCardSoft}" Padding="10,0">
-                        <Entry Placeholder="Ej: Estudiar C#" Text="{Binding NewTaskTitle}" TextColor="White" PlaceholderColor="{StaticResource AeroSubText}" />
+                        <Entry Placeholder="Ej: Estudiar C#" Text="{Binding NewTaskTitle}" TextColor="White" PlaceholderColor="{StaticResource AeroSubText}" FontSize="14" />
                     </Border>
                     <HorizontalStackLayout Spacing="10">
-                        <Label Text="🪙 Monedas:" TextColor="White" VerticalOptions="Center" FontAttributes="Bold"/>
-                        <Entry Keyboard="Numeric" Text="{Binding NewTaskRewardCoinsText}" TextColor="{StaticResource AeroGold}" WidthRequest="80" FontAttributes="Bold" />
+                        <Label Text="🪙 Monedas:" TextColor="White" VerticalOptions="Center" FontAttributes="Bold" FontSize="14"/>
+                        <Entry Keyboard="Numeric" Text="{Binding NewTaskRewardCoinsText}" TextColor="{StaticResource AeroGold}" WidthRequest="60" FontAttributes="Bold" FontSize="14"/>
                     </HorizontalStackLayout>
                     <HorizontalStackLayout Spacing="10">
-                        <Label Text="📅 Fecha:" TextColor="White" VerticalOptions="Center" FontAttributes="Bold"/>
-                        <DatePicker Date="{Binding NewTaskDate}" TextColor="White" BackgroundColor="Transparent" />
+                        <Label Text="📅 Fecha:" TextColor="White" VerticalOptions="Center" FontAttributes="Bold" FontSize="14"/>
+                        <DatePicker Date="{Binding NewTaskDate}" TextColor="White" BackgroundColor="Transparent" FontSize="14"/>
                     </HorizontalStackLayout>
                     <HorizontalStackLayout Spacing="10">
-                        <Label Text="⏰ Hora:" TextColor="White" VerticalOptions="Center" FontAttributes="Bold"/>
-                        <TimePicker Time="{Binding NewTaskTime}" TextColor="White" BackgroundColor="Transparent" />
+                        <Label Text="⏰ Hora:" TextColor="White" VerticalOptions="Center" FontAttributes="Bold" FontSize="14"/>
+                        <TimePicker Time="{Binding NewTaskTime}" TextColor="White" BackgroundColor="Transparent" FontSize="14"/>
                     </HorizontalStackLayout>
-                    <Button Text="🖼️ Adjuntar Foto" Command="{Binding PickImageCommand}" Style="{StaticResource AeroGhostButton}" />
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="15" Margin="0,10,0,0">
-                        <Button Grid.Column="0" Text="CANCELAR" Command="{Binding CancelTaskCommand}" Style="{StaticResource AeroGhostButton}" />
-                        <Button Grid.Column="1" Text="GUARDAR" Command="{Binding SaveTaskCommand}" Style="{StaticResource AeroActionButton}" />
+                    <Button Text="🖼️ Adjuntar Foto" Command="{Binding PickImageCommand}" Style="{StaticResource AeroGhostButton}" FontSize="14" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,5,0,0">
+                        <Button Grid.Column="0" Text="CANCELAR" Command="{Binding CancelTaskCommand}" Style="{StaticResource AeroGhostButton}" FontSize="13" />
+                        <Button Grid.Column="1" Text="GUARDAR" Command="{Binding SaveTaskCommand}" Style="{StaticResource AeroActionButton}" FontSize="13" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
         </Grid>
 
         <Grid IsVisible="{Binding IsCreatingHabit}" BackgroundColor="#D9000000" Padding="20">
-            <Border Style="{StaticResource AeroGlassCard}" VerticalOptions="Center" Padding="25" BackgroundColor="#1E2A33">
-                <VerticalStackLayout Spacing="15">
-                    <Label Text="NUEVO HÁBITO" Style="{StaticResource AeroSectionTitle}" HorizontalOptions="Center" FontSize="20" />
+            <Border Style="{StaticResource AeroGlassCard}" VerticalOptions="Center" Padding="20" BackgroundColor="#1E2A33">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="NUEVO HÁBITO" Style="{StaticResource AeroSectionTitle}" HorizontalOptions="Center" FontSize="18" />
                     <Border Style="{StaticResource AeroCardSoft}" Padding="10,0">
-                        <Entry Placeholder="Ej: Beber agua" Text="{Binding NewHabitTitle}" TextColor="White" PlaceholderColor="{StaticResource AeroSubText}" />
+                        <Entry Placeholder="Ej: Beber agua" Text="{Binding NewHabitTitle}" TextColor="White" PlaceholderColor="{StaticResource AeroSubText}" FontSize="14"/>
                     </Border>
                     <HorizontalStackLayout Spacing="10">
-                        <Label Text="🪙 Monedas:" TextColor="White" VerticalOptions="Center" FontAttributes="Bold"/>
-                        <Entry Keyboard="Numeric" Text="{Binding NewHabitRewardCoinsText}" TextColor="{StaticResource AeroGold}" WidthRequest="80" FontAttributes="Bold" />
+                        <Label Text="🪙 Monedas:" TextColor="White" VerticalOptions="Center" FontAttributes="Bold" FontSize="14"/>
+                        <Entry Keyboard="Numeric" Text="{Binding NewHabitRewardCoinsText}" TextColor="{StaticResource AeroGold}" WidthRequest="60" FontAttributes="Bold" FontSize="14"/>
                     </HorizontalStackLayout>
                     <HorizontalStackLayout Spacing="10">
-                        <Label Text="⏰ Hora límite:" TextColor="White" VerticalOptions="Center" FontAttributes="Bold"/>
-                        <TimePicker Time="{Binding NewHabitTime}" TextColor="White" BackgroundColor="Transparent" />
+                        <Label Text="⏰ Hora:" TextColor="White" VerticalOptions="Center" FontAttributes="Bold" FontSize="14"/>
+                        <TimePicker Time="{Binding NewHabitTime}" TextColor="White" BackgroundColor="Transparent" FontSize="14"/>
                     </HorizontalStackLayout>
-                    <VerticalStackLayout Spacing="10">
-                        <Label Text="¿Qué días toca esta misión?" Style="{StaticResource AeroSectionTitle}" FontSize="14" HorizontalOptions="Center" />
-                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding WeekDays}" Spacing="8" HorizontalOptions="Center">
+
+                    <VerticalStackLayout Spacing="5">
+                        <Label Text="¿Qué días toca?" Style="{StaticResource AeroSectionTitle}" FontSize="13" HorizontalOptions="Center" />
+                        <HorizontalStackLayout BindableLayout.ItemsSource="{Binding WeekDays}" Spacing="5" HorizontalOptions="Center">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="models:DayBubble">
-                                    <Border WidthRequest="42" HeightRequest="42" StrokeShape="RoundRectangle 21" Stroke="Transparent">
+                                    <Border WidthRequest="36" HeightRequest="36" StrokeShape="RoundRectangle 18" Stroke="Transparent">
                                         <Border.GestureRecognizers>
                                             <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:MainViewModel}}, Path=ToggleDayCommand}" CommandParameter="{Binding .}"/>
                                         </Border.GestureRecognizers>
@@ -210,7 +203,7 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
-                                        <Label Text="{Binding Name}" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" FontSize="16">
+                                        <Label Text="{Binding Name}" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" FontSize="14">
                                             <Label.Style>
                                                 <Style TargetType="Label">
                                                     <Setter Property="TextColor" Value="{StaticResource AeroSubText}" />
@@ -227,52 +220,51 @@
                             </BindableLayout.ItemTemplate>
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
-                    <Button Text="🖼️ Adjuntar Foto" Command="{Binding PickImageCommand}" Style="{StaticResource AeroGhostButton}" />
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="15" Margin="0,10,0,0">
-                        <Button Grid.Column="0" Text="CANCELAR" Command="{Binding CancelHabitCommand}" Style="{StaticResource AeroGhostButton}" />
-                        <Button Grid.Column="1" Text="GUARDAR" Command="{Binding SaveHabitCommand}" Style="{StaticResource AeroActionButton}" />
+
+                    <Button Text="🖼️ Adjuntar Foto" Command="{Binding PickImageCommand}" Style="{StaticResource AeroGhostButton}" FontSize="14" Margin="0,5,0,0"/>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,5,0,0">
+                        <Button Grid.Column="0" Text="CANCELAR" Command="{Binding CancelHabitCommand}" Style="{StaticResource AeroGhostButton}" FontSize="13"/>
+                        <Button Grid.Column="1" Text="GUARDAR" Command="{Binding SaveHabitCommand}" Style="{StaticResource AeroActionButton}" FontSize="13"/>
                     </Grid>
                 </VerticalStackLayout>
             </Border>
         </Grid>
 
         <Grid IsVisible="{Binding IsCreatingReward}" BackgroundColor="#D9000000" Padding="20">
-            <Border Style="{StaticResource AeroGlassCard}" VerticalOptions="Center" Padding="25" BackgroundColor="#1E2A33">
-                <VerticalStackLayout Spacing="15">
-                    <Label Text="NUEVO CAPRICHO" Style="{StaticResource AeroSectionTitle}" HorizontalOptions="Center" FontSize="20" />
+            <Border Style="{StaticResource AeroGlassCard}" VerticalOptions="Center" Padding="20" BackgroundColor="#1E2A33">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="NUEVO CAPRICHO" Style="{StaticResource AeroSectionTitle}" HorizontalOptions="Center" FontSize="18" />
                     <Border Style="{StaticResource AeroCardSoft}" Padding="10,0">
-                        <Entry Placeholder="Ej: Un café grande" Text="{Binding NewRewardTitle}" TextColor="White" PlaceholderColor="{StaticResource AeroSubText}" />
+                        <Entry Placeholder="Ej: Un café" Text="{Binding NewRewardTitle}" TextColor="White" PlaceholderColor="{StaticResource AeroSubText}" FontSize="14"/>
                     </Border>
                     <HorizontalStackLayout Spacing="10">
-                        <Label Text="🪙 Coste:" TextColor="White" VerticalOptions="Center" FontAttributes="Bold"/>
-                        <Entry Keyboard="Numeric" Text="{Binding NewRewardCostText}" TextColor="{StaticResource AeroGold}" WidthRequest="80" FontAttributes="Bold" />
+                        <Label Text="🪙 Coste:" TextColor="White" VerticalOptions="Center" FontAttributes="Bold" FontSize="14"/>
+                        <Entry Keyboard="Numeric" Text="{Binding NewRewardCostText}" TextColor="{StaticResource AeroGold}" WidthRequest="60" FontAttributes="Bold" FontSize="14" />
                     </HorizontalStackLayout>
-                    <Button Text="🖼️ Adjuntar Foto" Command="{Binding PickImageCommand}" Style="{StaticResource AeroGhostButton}" />
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="15" Margin="0,10,0,0">
-                        <Button Grid.Column="0" Text="CANCELAR" Command="{Binding CancelRewardCommand}" Style="{StaticResource AeroGhostButton}" />
-                        <Button Grid.Column="1" Text="GUARDAR" Command="{Binding SaveRewardCommand}" Style="{StaticResource AeroActionButton}" />
+                    <Button Text="🖼️ Adjuntar Foto" Command="{Binding PickImageCommand}" Style="{StaticResource AeroGhostButton}" FontSize="14"/>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,5,0,0">
+                        <Button Grid.Column="0" Text="CANCELAR" Command="{Binding CancelRewardCommand}" Style="{StaticResource AeroGhostButton}" FontSize="13"/>
+                        <Button Grid.Column="1" Text="GUARDAR" Command="{Binding SaveRewardCommand}" Style="{StaticResource AeroActionButton}" FontSize="13"/>
                     </Grid>
                 </VerticalStackLayout>
             </Border>
         </Grid>
 
-        <Grid IsVisible="{Binding IsAlertVisible}" BackgroundColor="#D9000000" Padding="30">
-            <Border Style="{StaticResource AeroGlassCard}" VerticalOptions="Center" Padding="30" BackgroundColor="#1A2E40" Stroke="{StaticResource AeroSkyDeep}" StrokeThickness="2">
-                <VerticalStackLayout Spacing="20">
-                    <Label Text="{Binding AlertTitle}" Style="{StaticResource AeroSectionTitle}" HorizontalOptions="Center" FontSize="22" TextColor="{StaticResource AeroGlow}" />
-                    <Label Text="{Binding AlertMessage}" TextColor="White" FontSize="16" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
-
-                    <Button Text="ENTENDIDO" Command="{Binding CloseAlertCommand}" CommandParameter="No" Style="{StaticResource AeroActionButton}">
+        <Grid IsVisible="{Binding IsAlertVisible}" BackgroundColor="#D9000000" Padding="25">
+            <Border Style="{StaticResource AeroGlassCard}" VerticalOptions="Center" Padding="25" BackgroundColor="#1A2E40" Stroke="{StaticResource AeroSkyDeep}" StrokeThickness="2">
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="{Binding AlertTitle}" Style="{StaticResource AeroSectionTitle}" HorizontalOptions="Center" FontSize="20" TextColor="{StaticResource AeroGlow}" />
+                    <Label Text="{Binding AlertMessage}" TextColor="White" FontSize="15" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                    <Button Text="ENTENDIDO" Command="{Binding CloseAlertCommand}" CommandParameter="No" Style="{StaticResource AeroActionButton}" FontSize="14" Margin="0,10,0,0">
                         <Button.Triggers>
                             <DataTrigger TargetType="Button" Binding="{Binding IsConfirmMode}" Value="True">
                                 <Setter Property="IsVisible" Value="False"/>
                             </DataTrigger>
                         </Button.Triggers>
                     </Button>
-
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="15" IsVisible="{Binding IsConfirmMode}">
-                        <Button Grid.Column="0" Text="NO" Command="{Binding CloseAlertCommand}" CommandParameter="No" Style="{StaticResource AeroGhostButton}" />
-                        <Button Grid.Column="1" Text="SÍ" Command="{Binding CloseAlertCommand}" CommandParameter="Yes" Style="{StaticResource AeroActionButton}" />
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" IsVisible="{Binding IsConfirmMode}" Margin="0,10,0,0">
+                        <Button Grid.Column="0" Text="NO" Command="{Binding CloseAlertCommand}" CommandParameter="No" Style="{StaticResource AeroGhostButton}" FontSize="14" />
+                        <Button Grid.Column="1" Text="SÍ" Command="{Binding CloseAlertCommand}" CommandParameter="Yes" Style="{StaticResource AeroActionButton}" FontSize="14" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
