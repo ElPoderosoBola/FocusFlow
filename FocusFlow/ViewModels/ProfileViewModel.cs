@@ -3,6 +3,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using FocusFlow.Models;
 using FocusFlow.Services;
 using CommunityToolkit.Mvvm.Input;
+// 👇 IMPORTANTE: Añadimos esto para poder hablar con el centro de notificaciones
+using Plugin.LocalNotification;
 
 namespace FocusFlow.ViewModels;
 
@@ -34,7 +36,9 @@ public partial class ProfileViewModel : ObservableObject
     {
         var session = await _databaseService.GetUserSessionAsync();
         CurrentUserProfile = await _databaseService.GetUserProfileAsync(session.CurrentUserId);
-        var achievementList = await _databaseService.GetAchievementsAsync();
+
+        // 🏆 PEDIMOS LOS LOGROS SOLO DEL USUARIO ACTUAL
+        var achievementList = await _databaseService.GetAchievementsAsync(session.CurrentUserId);
         Achievements = new ObservableCollection<AchievementItem>(achievementList);
 
         var rewards = await _databaseService.GetRewardsAsync(session.CurrentUserId);
@@ -45,13 +49,16 @@ public partial class ProfileViewModel : ObservableObject
     [RelayCommand]
     private async Task LogoutAsync()
     {
-
         var session = await _databaseService.GetUserSessionAsync();
         session.CurrentUserId = 0;
         session.LastAccessDate = DateTime.Today;
         await _databaseService.SaveUserSessionAsync(session);
 
-        await _soundService.PlayLogoutAsync(); // <-- ¡Suena Shutdown.mp3 al salir!
+        await _soundService.PlayLogoutAsync();
+
+        // 🧹 ¡MAGIA LIMPIADORA! Cancelamos y borramos TODAS las notificaciones de Android
+        LocalNotificationCenter.Current.CancelAll();
+        LocalNotificationCenter.Current.ClearAll();
 
         Application.Current.Windows[0].Page = new LoginPage(_databaseService, _soundService);
     }

@@ -71,26 +71,32 @@ public partial class MainViewModel : ObservableObject
 
     public async Task InitializeAsync()
     {
-        if (_isInitialized) return;
+        // 1. Si es la primera vez que se abre la app, cargamos los datos de la base de datos
+        if (!_isInitialized)
+        {
+            var session = await _databaseService.GetUserSessionAsync();
+            _currentUserId = session.CurrentUserId;
+            if (_currentUserId == 0) return;
 
-        var session = await _databaseService.GetUserSessionAsync();
-        _currentUserId = session.CurrentUserId;
-        if (_currentUserId == 0) return;
+            CurrentUserProfile = await _databaseService.GetUserProfileAsync(_currentUserId);
+            await LoadTasksAsync();
+            await LoadHabitsAsync();
+            await LoadRewardsAsync();
 
-        CurrentUserProfile = await _databaseService.GetUserProfileAsync(_currentUserId);
-        await LoadTasksAsync(); await LoadHabitsAsync(); await LoadRewardsAsync();
+            CurrentUserProfile.LastLoginDate = DateTime.Today;
+            await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
+            OnPropertyChanged(nameof(CurrentUserProfile));
 
-        CurrentUserProfile.LastLoginDate = DateTime.Today;
-        await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
-        OnPropertyChanged(nameof(CurrentUserProfile));
+            await ScheduleDailyReminderAsync();
+            _timer.Start();
 
-        await ScheduleDailyReminderAsync();
-        _timer.Start();
+            _isInitialized = true; // Marcamos que ya hemos cargado los datos iniciales
+        }
 
-        // 🚀 ¡NUEVO! Nada más entrar, el vigilante revisa si caducó algo mientras no estabas
+        // 🚀 ¡AQUÍ ESTÁ LA TRAMPA PARA EL VIGILANTE!
+        // Como esto está FUERA del bloque de arriba, se ejecutará SIEMPRE.
+        // Si minimizas la app y la vuelves a abrir media hora después, revisará la hora inmediatamente.
         await CheckMissionDeadlinesAsync();
-
-        _isInitialized = true;
     }
 
     // --- MAGIA DE NOTIFICACIONES (¡EDICIÓN TFG!) ---
@@ -274,7 +280,9 @@ public partial class MainViewModel : ObservableObject
 
     private async Task CheckAchievementsAsync()
     {
-        var achievements = await _databaseService.GetAchievementsAsync();
+        // 🎫 ¡AQUÍ ESTÁ LA MAGIA! Le damos el ticket con nuestro número al panadero
+        var achievements = await _databaseService.GetAchievementsAsync(_currentUserId);
+
         var unlockedAny = false; string unlockedTitles = "";
 
         async Task Unlock(string title, string desc)

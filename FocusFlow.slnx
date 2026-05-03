@@ -1,3 +1,5 @@
 <Solution>
-  <Project Path="FocusFlow/FocusFlow.csproj" />
+  <Project Path="FocusFlow/FocusFlow.csproj">
+    <Deploy />
+  </Project>
 </Solution>
