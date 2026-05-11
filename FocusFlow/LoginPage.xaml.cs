@@ -8,7 +8,7 @@ public partial class LoginPage : ContentPage
     private readonly DatabaseService _databaseService;
     private readonly SoundService _soundService;
 
-    // El "cronómetro" secreto para que el código espere a que pulses "ENTENDIDO"
+    // Task para esperar a que pulses "ENTENDIDO"
     private TaskCompletionSource<bool> _alertTcs;
 
     public LoginPage(DatabaseService databaseService, SoundService soundService)
@@ -18,7 +18,7 @@ public partial class LoginPage : ContentPage
         _soundService = soundService;
     }
 
-    // --- NUESTRO CREADOR DE HOLOGRAMAS ---
+    // Alert custom que he fabricado
     private async Task ShowAeroAlert(string title, string message)
     {
         AlertTitleLabel.Text = title;
@@ -32,8 +32,8 @@ public partial class LoginPage : ContentPage
     private async void OnCloseAlertClicked(object sender, EventArgs e)
     {
         await _soundService.PlayClickAsync();
-        AlertOverlay.IsVisible = false; // Escondemos el cristal
-        _alertTcs?.TrySetResult(true);  // Le decimos al código: "¡Ya puedes continuar!"
+        AlertOverlay.IsVisible = false; // Escondemos el alert
+        _alertTcs?.TrySetResult(true);  // Continúa la ejecución
     }
     // ------------------------------------
 

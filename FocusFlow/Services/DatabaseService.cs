@@ -11,7 +11,7 @@ public class DatabaseService
     {
         if (_database is not null) return;
 
-        // 🌟 ¡MAGIA! Pasamos a v4 para que se cree la tabla de logros con la columna UserId
+        // Creamos la base de datos y sus tablas
         var databasePath = Path.Combine(FileSystem.AppDataDirectory, "focusflow_v4.db3");
 
         _database = new SQLiteAsyncConnection(databasePath);
@@ -104,7 +104,7 @@ public class DatabaseService
         var profile = new UserProfile { UserId = user.Id, Level = 1, CurrentXP = 0, Coins = 0, Health = 50, MaxHealth = 50, LastLoginDate = DateTime.Today };
         await _database.InsertAsync(profile);
 
-        // 🏆 ¡AQUÍ LE FABRICAMOS SU VITRINA DE LOGROS PERSONAL!
+        // Creamos los logros que puede conseguir el usuario
         var personalAchievements = new List<AchievementItem>
         {
             new AchievementItem { UserId = user.Id, Title = "Primeros Pasos", Description = "Completa tu primera misión diaria.", IsUnlocked = false },

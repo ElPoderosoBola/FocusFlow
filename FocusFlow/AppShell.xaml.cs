@@ -9,14 +9,14 @@ public partial class AppShell : Shell
         InitializeComponent();
     }
 
-    // 🪄 Este evento se dispara cada vez que cambias de pestaña
+    // Se dispara cuando cambias de page
     protected override async void OnNavigated(ShellNavigatedEventArgs args)
     {
         base.OnNavigated(args);
 
         try
         {
-            // Buscamos tu servicio de sonido en las tripas de la app y le damos al Play
+            // Reproducimos el click recogiendo el SoundService
             var soundService = Application.Current?.Handler?.MauiContext?.Services.GetService<SoundService>();
             if (soundService != null)
             {
@@ -25,7 +25,7 @@ public partial class AppShell : Shell
         }
         catch
         {
-            // Si hay algún micro-corte al cargar, nos quedamos callados para no molestar
+            // Porsiacaso ha habido un error
         }
     }
 }

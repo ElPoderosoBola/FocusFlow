@@ -10,7 +10,7 @@ namespace FocusFlow
         {
             InitializeComponent();
 
-            // Enchufamos el Titiritero a la Pantalla
+            // Linkeamos el viewmodel a la view
             _viewModel = viewModel;
             BindingContext = _viewModel;
 

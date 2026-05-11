@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using FocusFlow.Models;
 using FocusFlow.Services;
 using CommunityToolkit.Mvvm.Input;
-// 👇 IMPORTANTE: Añadimos esto para poder hablar con el centro de notificaciones
+// Importación para controlar las notificaciones locales
 using Plugin.LocalNotification;
 
 namespace FocusFlow.ViewModels;
@@ -37,7 +37,7 @@ public partial class ProfileViewModel : ObservableObject
         var session = await _databaseService.GetUserSessionAsync();
         CurrentUserProfile = await _databaseService.GetUserProfileAsync(session.CurrentUserId);
 
-        // 🏆 PEDIMOS LOS LOGROS SOLO DEL USUARIO ACTUAL
+        // Recogemos los logros del usuario
         var achievementList = await _databaseService.GetAchievementsAsync(session.CurrentUserId);
         Achievements = new ObservableCollection<AchievementItem>(achievementList);
 
@@ -56,7 +56,7 @@ public partial class ProfileViewModel : ObservableObject
 
         await _soundService.PlayLogoutAsync();
 
-        // 🧹 ¡MAGIA LIMPIADORA! Cancelamos y borramos TODAS las notificaciones de Android
+        // Borramos las notificaciones
         LocalNotificationCenter.Current.CancelAll();
         LocalNotificationCenter.Current.ClearAll();
 

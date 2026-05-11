@@ -99,13 +99,13 @@ public partial class MainViewModel : ObservableObject
         await CheckMissionDeadlinesAsync();
     }
 
-    // --- MAGIA DE NOTIFICACIONES (¡EDICIÓN TFG!) ---
+    // Lógica para enviar notificaciones periódicas al usuario
     private async Task ScheduleTaskNotifications(TaskItem task)
     {
         var now = DateTime.Now;
         var notifyTime = task.DueDateTime.AddMinutes(-30);
 
-        // 🚀 Si lo pones a menos de 30 mins, ¡PITA EN 3 SEGUNDOS PARA LA DEMO!
+        // Si queda menos de 30 minutos, avisamos casi al instante (para pruebas del profesor)
         if (notifyTime <= now && task.DueDateTime > now) notifyTime = now.AddSeconds(3);
 
         if (notifyTime > now || (notifyTime <= now && task.DueDateTime > now))
@@ -119,7 +119,7 @@ public partial class MainViewModel : ObservableObject
             });
         }
 
-        // 💀 Notificación fantasma de FRACASO para que pite con la app cerrada
+        // Notificación de que el usuario ha fallado su tarea
         if (task.DueDateTime > now)
         {
             await LocalNotificationCenter.Current.Show(new NotificationRequest
@@ -151,7 +151,7 @@ public partial class MainViewModel : ObservableObject
 
         var notifyTime = habitDeadline.AddMinutes(-30);
 
-        // 🚀 Aviso en 3 segundos si queda menos de media hora
+        // Aviso instantáneo
         if (notifyTime <= now) notifyTime = now.AddSeconds(3);
 
         await LocalNotificationCenter.Current.Show(new NotificationRequest
@@ -162,7 +162,7 @@ public partial class MainViewModel : ObservableObject
             Schedule = new NotificationRequestSchedule { NotifyTime = notifyTime }
         });
 
-        // 💀 Fracaso en la sombra
+        // Notificación de que el usuario fallado el hábito
         await LocalNotificationCenter.Current.Show(new NotificationRequest
         {
             NotificationId = 4000 + habit.Id,
@@ -213,7 +213,7 @@ public partial class MainViewModel : ObservableObject
     private async Task CheckMissionDeadlinesAsync()
     {
         var now = DateTime.Now;
-        bool needsUiUpdate = false; // 📝 Libreta para saber si tenemos que actualizar la pantalla
+        bool needsUiUpdate = false; // Variable para saber si tenemos que actualizar la interfaz
 
         // Revisamos Misiones
         foreach (var task in Tasks.Where(t => !t.IsCompleted && !t.IsFailed && t.DueDateTime <= now).ToList())
@@ -221,8 +221,8 @@ public partial class MainViewModel : ObservableObject
             task.IsFailed = true;
             await _databaseService.SaveTaskAsync(task);
 
-            CurrentUserProfile.Health -= 10; // Te quita vida
-            needsUiUpdate = true; // Anotamos que ha habido cambios
+            CurrentUserProfile.Health -= 10;
+            needsUiUpdate = true; // Actualizamos que ha habido cambios
 
             await _soundService.PlayFailAsync();
             await ShowAeroAlert("Misión Fallida 💀", $"Se acabó el tiempo para: {task.Title}");
@@ -240,22 +240,22 @@ public partial class MainViewModel : ObservableObject
             var habitDeadline = today.Add(habit.ScheduledTime);
             if (habit.LastCompletedDate.Date != today && habit.LastPenaltyDate.Date != today && habitDeadline <= now)
             {
-                CurrentUserProfile.Health -= 5; // Te quita vida
+                CurrentUserProfile.Health -= 5;
                 habit.LastPenaltyDate = today;
                 await _databaseService.SaveHabitAsync(habit);
-                needsUiUpdate = true; // Anotamos que ha habido cambios
+                needsUiUpdate = true; // Actualizamos que ha habido cambios
 
                 await _soundService.PlayFailAsync();
                 await ShowAeroAlert("Hábito Fallido 💀", $"No has completado: {habit.Title}");
             }
         }
 
-        // 🔄 Si alguien ha fallado, actualizamos los números y borramos las tareas de la pantalla
+        // Si alguien ha fallado, actualizamos los números y borramos las tareas de la pantalla
         if (needsUiUpdate)
         {
             await _databaseService.SaveUserProfileAsync(CurrentUserProfile);
-            OnPropertyChanged(nameof(CurrentUserProfile)); // ¡Dibuja la nueva salud!
-            await LoadTasksAsync(); // ¡Hace desaparecer la misión fallida!
+            OnPropertyChanged(nameof(CurrentUserProfile)); // Actualiza la salud
+            await LoadTasksAsync(); // Hace desaparecer la misión fallida
         }
 
         // ¿Nos hemos quedado sin vida?
@@ -280,7 +280,7 @@ public partial class MainViewModel : ObservableObject
 
     private async Task CheckAchievementsAsync()
     {
-        // 🎫 ¡AQUÍ ESTÁ LA MAGIA! Le damos el ticket con nuestro número al panadero
+        // Obtiene los logros con del usuario
         var achievements = await _databaseService.GetAchievementsAsync(_currentUserId);
 
         var unlockedAny = false; string unlockedTitles = "";
