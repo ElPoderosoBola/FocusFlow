@@ -7,7 +7,7 @@ namespace FocusFlow.Models
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
 
-        public int UserId { get; set; } // 👈 ¡NUEVA ETIQUETA DE DUEÑO!
+        public int UserId { get; set; }
 
         public string Title { get; set; }
 

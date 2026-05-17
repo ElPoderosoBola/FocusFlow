@@ -104,7 +104,7 @@ public class DatabaseService
         var profile = new UserProfile { UserId = user.Id, Level = 1, CurrentXP = 0, Coins = 0, Health = 50, MaxHealth = 50, LastLoginDate = DateTime.Today };
         await _database.InsertAsync(profile);
 
-        // Creamos los logros que puede conseguir el usuario
+
         var personalAchievements = new List<AchievementItem>
         {
             new AchievementItem { UserId = user.Id, Title = "Primeros Pasos", Description = "Completa tu primera misión diaria.", IsUnlocked = false },
@@ -136,7 +136,7 @@ public class DatabaseService
     }
     public async Task<int> SaveUserSessionAsync(UserSession session) { await InitAsync(); return await _database!.InsertOrReplaceAsync(session); }
 
-    // 🏆 ¡AHORA LOS LOGROS SE PIDEN POR USUARIO! ¡ESTA ERA LA PIEZA QUE FALTABA!
+
     public async Task<List<AchievementItem>> GetAchievementsAsync(int userId)
     {
         await InitAsync();

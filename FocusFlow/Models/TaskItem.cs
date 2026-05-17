@@ -1,11 +1,11 @@
 ﻿using System;
-using SQLite; // ¡LA LIBRERÍA MAGICA DE LA BASE DE DATOS!
+using SQLite; 
 
 namespace FocusFlow.Models
 {
     public class TaskItem
     {
-        [PrimaryKey, AutoIncrement] // ¡EL DNI DE LA TAREA!
+        [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
         public int UserId { get; set; }
         public string Title { get; set; }

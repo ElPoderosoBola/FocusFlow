@@ -14,7 +14,7 @@ namespace FocusFlow.Models
         public int MaxHealth { get; set; }
         public DateTime LastLoginDate { get; set; }
 
-        // 📊 NUESTRO DIARIO DE ESTADÍSTICAS SECRETAS
+
         public int TotalCoinsEarned { get; set; }
         public int TotalRewardsBought { get; set; }
         public int TotalTasksCompleted { get; set; }
