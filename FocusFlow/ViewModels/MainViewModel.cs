@@ -329,7 +329,7 @@ public partial class MainViewModel : ObservableObject
         var newTask = new TaskItem { UserId = _currentUserId, Title = NewTaskTitle.Trim(), DueDateTime = NewTaskDate.Date.Add(NewTaskTime), RewardCoins = rewardCoins, IsCompleted = false, IsFailed = false, ImagePath = _pendingImagePath };
         await _databaseService.SaveTaskAsync(newTask); Tasks.Add(newTask);
 
-        await ScheduleTaskNotifications(newTask); // 🚀 ¡Programamos la notificación al guardar!
+        await ScheduleTaskNotifications(newTask); 
 
         await _soundService.PlayCreatedAsync(); _pendingImagePath = null; IsCreatingTask = false;
     }
@@ -351,7 +351,7 @@ public partial class MainViewModel : ObservableObject
         var newHabit = new HabitItem { UserId = _currentUserId, Title = NewHabitTitle.Trim(), ScheduledTime = NewHabitTime, ActiveDaysCsv = dayTokens, RewardCoins = rewardCoins, IsPositive = true, ImagePath = _pendingImagePath };
         await _databaseService.SaveHabitAsync(newHabit); Habits.Add(newHabit);
 
-        await ScheduleHabitNotifications(newHabit); // 🚀 ¡Programamos la notificación del hábito!
+        await ScheduleHabitNotifications(newHabit); 
 
         await _soundService.PlayCreatedAsync(); _pendingImagePath = null; IsCreatingHabit = false; await CheckAchievementsAsync();
     }
@@ -385,7 +385,7 @@ public partial class MainViewModel : ObservableObject
         {
             await _soundService.PlayClickAsync(); if (task is null || !await ShowAeroAlert("Eliminar", "¿Borrar esta tarea?", true)) return;
             await _databaseService.DeleteTaskAsync(task); Tasks.Remove(task);
-            CancelTaskNotifications(task.Id); // 🧹 Limpiamos sus notificaciones
+            CancelTaskNotifications(task.Id); 
             await _soundService.PlayDeletedAsync();
         }
         catch (Exception ex) { await ShowAeroAlert("Error", ex.Message); }
@@ -398,7 +398,7 @@ public partial class MainViewModel : ObservableObject
         {
             await _soundService.PlayClickAsync(); if (habit is null || !await ShowAeroAlert("Eliminar", "¿Borrar este hábito?", true)) return;
             await _databaseService.DeleteHabitAsync(habit); Habits.Remove(habit);
-            CancelHabitNotifications(habit.Id); // 🧹 Limpiamos sus notificaciones
+            CancelHabitNotifications(habit.Id); 
             await _soundService.PlayDeletedAsync();
         }
         catch (Exception ex) { await ShowAeroAlert("Error", ex.Message); }
@@ -419,7 +419,7 @@ public partial class MainViewModel : ObservableObject
     private async Task CompleteTaskAsync(TaskItem task)
     {
         if (task is null || task.IsCompleted) return;
-        CancelTaskNotifications(task.Id); // 🧹 Ya la completaste, que no suene el fracaso
+        CancelTaskNotifications(task.Id);
 
         if (task.DueDateTime <= DateTime.Now)
         {
@@ -440,7 +440,7 @@ public partial class MainViewModel : ObservableObject
         if (!activeDays.Contains(todayCode)) { await ShowAeroAlert("Aviso", "No toca hoy."); return; }
         if (habit.LastCompletedDate.Date == today) { await ShowAeroAlert("Aviso", "Ya completado hoy."); return; }
 
-        CancelHabitNotifications(habit.Id); // 🧹 Ya la completaste hoy, cancelamos el fracaso
+        CancelHabitNotifications(habit.Id);
 
         if (DateTime.Now > today.Add(habit.ScheduledTime))
         {
@@ -480,7 +480,7 @@ public partial class MainViewModel : ObservableObject
         if (bubble != null)
         {
             bubble.IsSelected = !bubble.IsSelected;
-            await _soundService.PlayClickAsync(); // 🔊 ¡Sonido de las burbujas!
+            await _soundService.PlayClickAsync();
         }
     }
 }
